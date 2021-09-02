@@ -21,3 +21,11 @@ Integrantes:
    - Añadir modelos de las lunas de los planetas, como el ejemplo [solar-system-threejs](https://github.com/sanderblue/solar-system-threejs/).
 
 ![Sistema solar](https://sanderblue.github.io/assets/screenshots/screenshot_solarsystem_saturn.png)
+
+
+3. Página web con modelos 3D o 2D animados: La idea es desarrollar páginas web con el uso de Web GL, puede ser de cualquier producto usable en el futuro o incluso como algun blog de nostros. Algunos ejemplos se esncuentran en https://garden-eight.com/  y uno más es https://solutions.centogene.com/#patientsolution
+
+![Captura de pantalla (223)](https://user-images.githubusercontent.com/88684682/131771485-e2850791-bab9-4a31-b1d5-0729922745c0.png)
+
+
+
