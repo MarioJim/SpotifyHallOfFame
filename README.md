@@ -33,7 +33,7 @@ Font: Gotham.
 
 #### Wireframes
 
-**TODO**
+Los puede encontrar en un [proyecto de Figma](https://www.figma.com/file/AKxiWLsrrIyHTKmVsh2kPI/Wireframes?node-id=0%3A1).
 
 ### Elementos 3D y su interacción
 
