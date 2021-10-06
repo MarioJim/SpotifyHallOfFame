@@ -1,4 +1,4 @@
-# ProyectoGraficas
+# Spotify Hall of Fame
 
 Proyecto final de la materia Gráficas computacionales
 
@@ -20,7 +20,7 @@ Mostrará las canciones que más has escuchado, el top 10 de México y el top 10
 
 - Landing page con la información de la aplicación y un botón para iniciar sesión en Spotify
 - Página de contacto, con nuestro nombre, tal vez un correo electrónico y el repositorio en GitHub en el que se pueda inspeccionar el código
-- Vista de canciones, una lista de las canciones más escuchadas por la persona
+- Vista de canciones, una lista de las canciones más escuchadas por la persona y de dos playlists de Spotify
 
 ### Diseño de la página (colores, texto)
 
@@ -28,9 +28,8 @@ Pantalla Landing (Ale)
 Pantalla contacto (Manu)
 Pantalla canciones (Mario)
 
-Azul y negro.
-Gotham. 
-
+Colores: Azul y negro.
+Font: Gotham.
 
 #### Wireframes
 

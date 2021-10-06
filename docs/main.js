@@ -14,12 +14,10 @@ const spotifyFetch = (urlPath) =>
 if (accessToken) {
   document.getElementById('stats-page').style.display = 'block';
   console.log('Your access token is', accessToken);
-  spotifyFetch('me/top/tracks?limit=10').then((res) => {
+  spotifyFetch('me/top/tracks?limit=10&time_range=long_term').then((res) => {
     document.getElementById('top-10-user').innerHTML =
-      displayTableOfSongs(
-        'Top 10 most listened songs in the last 4 weeks',
-        res.items,
-      ) + `<img src="${res.items[0].album.images[0].url}"></img>`;
+      displayTableOfSongs("Top 10 songs you've listened the most", res.items) +
+      `<img src="${res.items[0].album.images[0].url}"></img>`;
   });
   spotifyFetch('playlists/37i9dQZEVXbMDoHDwVN2tF/tracks?limit=10').then(
     (res) => {
