@@ -14,7 +14,7 @@ Integrantes:
 
 ### ¿Qué hará nuestra aplicación?
 
-**TODO**
+Mostrará las canciones que más has escuchado, el top 10 de México y el top 10 mundial en Spotify de una forma interactiva.
 
 ### Páginas de la aplicación y su interacción
 
@@ -25,7 +25,13 @@ Integrantes:
 
 ### Diseño de la página (colores, texto)
 
-**TODO**
+Pantalla Landing (Ale)
+Pantalla contacto (Manu)
+Pantalla canciones (Mario)
+
+Azul y negro.
+Gotham. 
+
 
 #### Wireframes
 
