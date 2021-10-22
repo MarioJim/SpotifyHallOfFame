@@ -1,3 +1,7 @@
+import AudioPlayer from './audio.js';
+
+const audioPlayer = new AudioPlayer();
+
 const getAccessToken = () => {
   const params = new URLSearchParams(window.location.hash.substr(1));
   if (params.has('access_token') && params.get('token_type') == 'Bearer')
@@ -17,7 +21,10 @@ if (accessToken) {
   spotifyFetch('me/top/tracks?limit=10&time_range=long_term').then((res) => {
     document.getElementById('top-10-user').innerHTML =
       displayTableOfSongs("Top 10 songs you've listened the most", res.items) +
-      `<img src="${res.items[0].album.images[0].url}"></img>`;
+      `<img id="albumuser" src="${res.items[0].album.images[0].url}"></img>`;
+    document.getElementById('albumuser').addEventListener('click', () => {
+      audioPlayer.playPause(res.items[0].preview_url);
+    });
   });
   spotifyFetch('playlists/37i9dQZEVXbMDoHDwVN2tF/tracks?limit=10').then(
     (res) => {
@@ -25,7 +32,11 @@ if (accessToken) {
         displayTableOfSongs(
           'Top 10 Global',
           res.items.map((i) => i.track),
-        ) + `<img src="${res.items[0].track.album.images[0].url}"></img>`;
+        ) +
+        `<img id="albumglobal" src="${res.items[0].track.album.images[0].url}"></img>`;
+      document.getElementById('albumglobal').addEventListener('click', () => {
+        audioPlayer.playPause(res.items[0].track.preview_url);
+      });
     },
   );
   spotifyFetch('playlists/37i9dQZEVXbO3qyFxbkOE1/tracks?limit=10').then(
@@ -34,7 +45,11 @@ if (accessToken) {
         displayTableOfSongs(
           'Top 10 México',
           res.items.map((i) => i.track),
-        ) + `<img src="${res.items[0].track.album.images[0].url}"></img>`;
+        ) +
+        `<img id="albummexico" src="${res.items[0].track.album.images[0].url}"></img>`;
+      document.getElementById('albummexico').addEventListener('click', () => {
+        audioPlayer.playPause(res.items[0].track.preview_url);
+      });
     },
   );
 } else {
