@@ -1,21 +1,99 @@
-import * as THREE from 'https://threejs.org/build/three.module.js';
-import { FBXLoader } from 'https://threejs.org/examples/jsm/loaders/FBXLoader.js';
+import * as THREE from 'three';
+import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
 
-let renderer = null,
-  scene = null,
-  camera = null,
-  root = null;
+import AudioPlayer from './audio';
+
+const audioPlayer = new AudioPlayer();
+
+const getAccessToken = () => {
+  const params = new URLSearchParams(window.location.hash.substr(1));
+  if (params.has('access_token') && params.get('token_type') == 'Bearer')
+    return params.get('access_token');
+  return null;
+};
+
+const accessToken = getAccessToken();
+const spotifyFetch = (urlPath: string) =>
+  fetch(`https://api.spotify.com/v1/${urlPath}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  }).then((response) => response.json());
+
+if (accessToken) {
+  document.getElementById('stats-page')!.style.display = 'block';
+  console.log('Your access token is', accessToken);
+  spotifyFetch('me/top/tracks?limit=10&time_range=long_term').then((res) => {
+    document.getElementById('top-10-user')!.innerHTML =
+      displayTableOfSongs("Top 10 songs you've listened the most", res.items) +
+      `<img id="albumuser" src="${res.items[0].album.images[0].url}"></img>`;
+    document.getElementById('albumuser')!.addEventListener('click', () => {
+      audioPlayer.playPause(res.items[0].preview_url);
+    });
+  });
+  spotifyFetch('playlists/37i9dQZEVXbMDoHDwVN2tF/tracks?limit=10').then(
+    (res) => {
+      document.getElementById('top-10-global')!.innerHTML =
+        displayTableOfSongs(
+          'Top 10 Global',
+          res.items.map((i: any) => i.track),
+        ) +
+        `<img id="albumglobal" src="${res.items[0].track.album.images[0].url}"></img>`;
+      document.getElementById('albumglobal')!.addEventListener('click', () => {
+        audioPlayer.playPause(res.items[0].track.preview_url);
+      });
+    },
+  );
+  spotifyFetch('playlists/37i9dQZEVXbO3qyFxbkOE1/tracks?limit=10').then(
+    (res) => {
+      document.getElementById('top-10-mex')!.innerHTML =
+        displayTableOfSongs(
+          'Top 10 México',
+          res.items.map((i: any) => i.track),
+        ) +
+        `<img id="albummexico" src="${res.items[0].track.album.images[0].url}"></img>`;
+      document.getElementById('albummexico')!.addEventListener('click', () => {
+        audioPlayer.playPause(res.items[0].track.preview_url);
+      });
+    },
+  );
+} else {
+  document.getElementById('login-page')!.style.display = 'block';
+  document.getElementById('login-btn')!.addEventListener('click', () => {
+    const spotifyAuthParams = new URLSearchParams();
+    spotifyAuthParams.set('client_id', '78d27efbc5e84665b852ca8dd63ea33f');
+    spotifyAuthParams.set('response_type', 'token');
+    const original_url = window.location.origin + window.location.pathname;
+    spotifyAuthParams.set('redirect_uri', original_url);
+    spotifyAuthParams.set('scope', ['user-top-read'].join(' '));
+    const params = spotifyAuthParams.toString();
+    window.location.replace(`https://accounts.spotify.com/authorize?${params}`);
+  });
+}
+
+const displayTableOfSongs = (title: string, songs: any[]) =>
+  `<h3>${title}</h3><ul>` +
+  songs.map((s) => `<li>${s.name} by ${s.artists[0].name}</li>`).join('') +
+  '</ul>';
+
+let renderer: THREE.WebGLRenderer | null = null,
+  scene: THREE.Scene | null = null,
+  camera: THREE.PerspectiveCamera | null = null,
+  root: THREE.Object3D | null = null;
 
 let raycaster = new THREE.Raycaster(),
   mouse = new THREE.Vector2(),
-  intersected,
-  clicked;
+  intersected: THREE.Mesh | null = null,
+  clicked: THREE.Object3D | null = null;
 
 let currentTime = Date.now();
-let particleSystem = null;
+let particleSystem: MusicNoteParticleSystem | null = null;
 
 class MusicNoteParticleSystem {
-  constructor(scene, n) {
+  scene: THREE.Object3D;
+  n: number;
+  animation: boolean;
+  particlePool: MusicNoteParticle[];
+
+  constructor(scene: THREE.Object3D, n: number) {
     this.scene = scene;
     this.n = n;
     this.animation = true;
@@ -31,13 +109,19 @@ class MusicNoteParticleSystem {
     });
   }
 
-  update(deltat) {
+  update(deltat: number) {
     this.particlePool.forEach((p) => p.update(deltat));
   }
 }
 
 class MusicNoteParticle {
-  constructor(model) {
+  model: THREE.Object3D;
+  state: number;
+  scale: number;
+  axis: THREE.Vector3;
+  delta: number;
+
+  constructor(model: THREE.Group) {
     this.model = model.children[0];
     this.state = 0;
     this.scale = 0;
@@ -50,7 +134,7 @@ class MusicNoteParticle {
     this.model.position.set(0, 0, 0);
   }
 
-  updateScale(deltat) {
+  updateScale(deltat: number) {
     if (this.state === 1) {
       this.delta += deltat;
       const x = 0.21 + this.delta / 1000;
@@ -65,11 +149,11 @@ class MusicNoteParticle {
     }
   }
 
-  updatePosition(deltat) {
+  updatePosition(deltat: number) {
     this.model.translateOnAxis(this.axis, deltat / 1000);
   }
 
-  update(deltat) {
+  update(deltat: number) {
     if (this.scale <= 0) {
       this.reset();
     }
@@ -123,7 +207,7 @@ const loadNoteKeysModels = async () => {
  * Creates a basic scene with lights, a camera, and 3 objects
  * @param {HTMLCanvasElement} canvas The canvas element to render on
  */
-const createScene = async (canvas) => {
+const createScene = async (canvas: HTMLCanvasElement) => {
   // Create the Three.js renderer and attach it to our canvas
   renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
   renderer.setSize(canvas.width, canvas.height);
@@ -151,7 +235,7 @@ const createScene = async (canvas) => {
   await particleSystem.loadAsync();
 };
 
-const onDocumentPointerMove = (event) => {
+const onDocumentPointerMove = (event: PointerEvent) => {
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
@@ -164,7 +248,7 @@ const onDocumentPointerMove = (event) => {
       if (intersected)
         intersected.material.emissive.set(intersected.currentHex);
 
-      intersected = intersects[0].object;
+      intersected = intersects[0].object as THREE.Mesh;
       intersected.currentHex = intersected.material.emissive.getHex();
       intersected.material.emissive.set(0xff0000);
     }
@@ -175,7 +259,7 @@ const onDocumentPointerMove = (event) => {
   }
 };
 
-const onDocumentPointerDown = (event) => {
+const onDocumentPointerDown = (event: PointerEvent) => {
   event.preventDefault();
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -196,7 +280,7 @@ const onDocumentPointerDown = (event) => {
 
 // main
 (async () => {
-  const canvas = document.getElementById('webglcanvas');
+  const canvas = document.getElementById('webglcanvas') as HTMLCanvasElement;
   await createScene(canvas);
   document.addEventListener('pointermove', onDocumentPointerMove);
   document.addEventListener('pointerdown', onDocumentPointerDown);

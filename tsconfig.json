@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "outDir": "./public/",
+    "noImplicitAny": true,
+    "module": "es6",
+    "strict": false,
+    "target": "es6",
+    "allowJs": true,
+    "sourceMap": true,
+    "lib": ["ESNext", "DOM", "DOM.Iterable"]
+  }
+}

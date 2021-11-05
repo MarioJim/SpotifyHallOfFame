@@ -1,12 +1,15 @@
 export default class AudioPlayer {
+  url: string | null;
+  player: HTMLAudioElement | null;
+
   constructor() {
     this.url = null;
     this.player = null;
   }
 
-  playPause(url) {
+  playPause(url: string) {
     if (url === this.url) {
-      this.player.pause();
+      this.player?.pause();
     } else {
       if (this.player) {
         this.player.pause();
