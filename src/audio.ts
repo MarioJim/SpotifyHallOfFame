@@ -1,27 +1,57 @@
+interface InitialState {
+  status: 'initial';
+}
+
+interface PausedState {
+  status: 'paused';
+  url: string;
+  player: HTMLAudioElement;
+}
+
+interface PlayingState {
+  status: 'playing';
+  url: string;
+  player: HTMLAudioElement;
+}
+
+type AudioPlayerState = InitialState | PausedState | PlayingState;
+
 export default class AudioPlayer {
-  url: string | null;
-  player: HTMLAudioElement | null;
+  state: AudioPlayerState;
 
   constructor() {
-    this.url = null;
-    this.player = null;
+    this.state = { status: 'initial' };
   }
 
   playPause(url: string) {
-    if (url === this.url) {
-      this.player?.pause();
-    } else {
-      if (this.player) {
-        this.player.pause();
-        this.player = null;
+    if (this.state.status === 'initial') {
+      this.#reset(url);
+    } else if (this.state.status === 'playing') {
+      this.state.player.pause();
+      if (this.state.url === url) {
+        this.state = { ...this.state, status: 'paused' };
+      } else {
+        this.#reset(url);
       }
-      this.player = new Audio(url);
-      this.player.volume = 0.2;
-      this.player.autoplay = false;
-      this.player
-        .play()
-        .catch((e) => console.error('Error playing audio: ' + e));
+    } else if (this.state.status === 'paused') {
+      if (this.state.url === url) {
+        this.state.player.play();
+        this.state = { ...this.state, status: 'playing' };
+      } else {
+        this.#reset(url);
+      }
     }
-    this.url = url;
+  }
+
+  #reset(url: string) {
+    const player = new Audio(url);
+    player.volume = 0.2;
+    player.autoplay = false;
+    player.addEventListener('ended', () => {
+      this.state = { status: 'initial' };
+    });
+    player.play().catch((e) => console.error('Error playing audio: ' + e));
+
+    this.state = { status: 'playing', player, url };
   }
 }

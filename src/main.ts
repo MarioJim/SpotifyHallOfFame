@@ -1,73 +1,54 @@
 import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 import AudioPlayer from './audio';
+import Hall from './hall';
 import MusicNoteParticleSystem from './particles';
+import loadSpotifyData from './spotify';
 
 const audioPlayer = new AudioPlayer();
 
-const getAccessToken = () => {
-  const params = new URLSearchParams(window.location.hash.substr(1));
-  if (params.has('access_token') && params.get('token_type') == 'Bearer')
-    return params.get('access_token');
-  return null;
-};
+loadSpotifyData().then((data) => {
+  if (data.status === 'ok') {
+    document.getElementById('stats-page')!.style.display = 'block';
+    const { mexico, global, personal } = data.data;
 
-const accessToken = getAccessToken();
-const spotifyFetch = (urlPath: string) =>
-  fetch(`https://api.spotify.com/v1/${urlPath}`, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  }).then((response) => response.json());
-
-if (accessToken) {
-  document.getElementById('stats-page')!.style.display = 'block';
-  console.log('Your access token is', accessToken);
-  spotifyFetch('me/top/tracks?limit=10&time_range=long_term').then((res) => {
     document.getElementById('top-10-user')!.innerHTML =
-      displayTableOfSongs("Top 10 songs you've listened the most", res.items) +
-      `<img id="albumuser" src="${res.items[0].album.images[0].url}"></img>`;
+      displayTableOfSongs("Top 10 songs you've listened the most", personal) +
+      `<img id="albumuser" src="${personal[0].album.images[0].url}"></img>`;
     document.getElementById('albumuser')!.addEventListener('click', () => {
-      audioPlayer.playPause(res.items[0].preview_url);
+      audioPlayer.playPause(personal[0].preview_url);
     });
-  });
-  spotifyFetch('playlists/37i9dQZEVXbMDoHDwVN2tF/tracks?limit=10').then(
-    (res) => {
-      document.getElementById('top-10-global')!.innerHTML =
-        displayTableOfSongs(
-          'Top 10 Global',
-          res.items.map((i: any) => i.track),
-        ) +
-        `<img id="albumglobal" src="${res.items[0].track.album.images[0].url}"></img>`;
-      document.getElementById('albumglobal')!.addEventListener('click', () => {
-        audioPlayer.playPause(res.items[0].track.preview_url);
-      });
-    },
-  );
-  spotifyFetch('playlists/37i9dQZEVXbO3qyFxbkOE1/tracks?limit=10').then(
-    (res) => {
-      document.getElementById('top-10-mex')!.innerHTML =
-        displayTableOfSongs(
-          'Top 10 México',
-          res.items.map((i: any) => i.track),
-        ) +
-        `<img id="albummexico" src="${res.items[0].track.album.images[0].url}"></img>`;
-      document.getElementById('albummexico')!.addEventListener('click', () => {
-        audioPlayer.playPause(res.items[0].track.preview_url);
-      });
-    },
-  );
-} else {
-  document.getElementById('login-page')!.style.display = 'block';
-  document.getElementById('login-btn')!.addEventListener('click', () => {
-    const spotifyAuthParams = new URLSearchParams();
-    spotifyAuthParams.set('client_id', '78d27efbc5e84665b852ca8dd63ea33f');
-    spotifyAuthParams.set('response_type', 'token');
-    const original_url = window.location.origin + window.location.pathname;
-    spotifyAuthParams.set('redirect_uri', original_url);
-    spotifyAuthParams.set('scope', ['user-top-read'].join(' '));
-    const params = spotifyAuthParams.toString();
-    window.location.replace(`https://accounts.spotify.com/authorize?${params}`);
-  });
-}
+
+    document.getElementById('top-10-global')!.innerHTML =
+      displayTableOfSongs('Top 10 Global', global) +
+      `<img id="albumglobal" src="${global[0].album.images[0].url}"></img>`;
+    document.getElementById('albumglobal')!.addEventListener('click', () => {
+      audioPlayer.playPause(global[0].preview_url);
+    });
+
+    document.getElementById('top-10-mex')!.innerHTML =
+      displayTableOfSongs('Top 10 México', mexico) +
+      `<img id="albummexico" src="${mexico[0].album.images[0].url}"></img>`;
+    document.getElementById('albummexico')!.addEventListener('click', () => {
+      audioPlayer.playPause(mexico[0].preview_url);
+    });
+  } else {
+    document.getElementById('login-page')!.style.display = 'block';
+    document.getElementById('login-btn')!.addEventListener('click', () => {
+      const spotifyAuthParams = new URLSearchParams();
+      spotifyAuthParams.set('client_id', '78d27efbc5e84665b852ca8dd63ea33f');
+      spotifyAuthParams.set('response_type', 'token');
+      const original_url = window.location.origin + window.location.pathname;
+      spotifyAuthParams.set('redirect_uri', original_url);
+      spotifyAuthParams.set('scope', ['user-top-read'].join(' '));
+      const params = spotifyAuthParams.toString();
+      window.location.replace(
+        `https://accounts.spotify.com/authorize?${params}`,
+      );
+    });
+  }
+});
 
 const displayTableOfSongs = (title: string, songs: any[]) =>
   `<h3>${title}</h3><ul>` +
@@ -77,7 +58,8 @@ const displayTableOfSongs = (title: string, songs: any[]) =>
 let renderer: THREE.WebGLRenderer | null = null,
   scene: THREE.Scene | null = null,
   camera: THREE.PerspectiveCamera | null = null,
-  root: THREE.Object3D | null = null;
+  root: THREE.Object3D | null = null,
+  controls: OrbitControls | null = null;
 
 let raycaster = new THREE.Raycaster(),
   mouse = new THREE.Vector2(),
@@ -114,6 +96,9 @@ const animate = () => {
     camera.updateProjectionMatrix();
   }
 
+  // Update camera's position
+  controls.update();
+
   particleSystem.update(deltat);
 
   // Render the scene
@@ -132,9 +117,8 @@ const createScene = async (canvas: HTMLCanvasElement) => {
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0.3, 0.3, 0.3);
 
-  const directionalLight = new THREE.DirectionalLight(0x111111, 1);
-  directionalLight.position.set(0, 5, 100);
-  scene.add(directionalLight);
+  const ambientLight = new THREE.AmbientLight(0xdddddd);
+  scene.add(ambientLight);
 
   // Add a camera so we can view the scene
   camera = new THREE.PerspectiveCamera(
@@ -143,12 +127,24 @@ const createScene = async (canvas: HTMLCanvasElement) => {
     1,
     4000,
   );
-  camera.position.z = 10;
+  camera.position.setY(10);
+  camera.position.setZ(10);
+
+  controls = new OrbitControls(camera, renderer.domElement);
 
   root = new THREE.Object3D();
 
   particleSystem = new MusicNoteParticleSystem(scene, 9);
   await particleSystem.loadAsync();
+
+  const halls = [
+    new Hall(scene, (0 * Math.PI) / 3),
+    new Hall(scene, (2 * Math.PI) / 3),
+    new Hall(scene, (4 * Math.PI) / 3),
+  ];
+  await halls[0].loadAsync();
+  await halls[1].loadAsync();
+  await halls[2].loadAsync();
 };
 
 // main

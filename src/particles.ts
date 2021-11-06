@@ -2,13 +2,13 @@ import * as THREE from 'three';
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
 
 export default class MusicNoteParticleSystem {
-  scene: THREE.Object3D;
+  parent: THREE.Object3D;
   n: number;
   animation: boolean;
   particlePool: MusicNoteParticle[];
 
-  constructor(scene: THREE.Object3D, n: number) {
-    this.scene = scene;
+  constructor(parent: THREE.Object3D, n: number) {
+    this.parent = parent;
     this.n = n;
     this.animation = true;
   }
@@ -18,7 +18,7 @@ export default class MusicNoteParticleSystem {
     this.particlePool = Array.from({ length: this.n }, (_, i) => {
       const model = Math.random() > 0.5 ? key1.clone() : key2.clone();
       model.position.set(i - 4, 0, 0);
-      this.scene.add(model);
+      this.parent.add(model);
       return new MusicNoteParticle(model);
     });
   }
@@ -67,13 +67,22 @@ class MusicNoteParticle {
     this.axis = new THREE.Vector3(0, 0, 0.5);
   }
 
-  reset() {
+  update(deltat: number) {
+    if (this.scale <= 0) {
+      this.#reset();
+    }
+    this.#updateScale(deltat);
+    this.model.scale.set(this.scale, this.scale, this.scale);
+    this.#updatePosition(deltat);
+  }
+
+  #reset() {
     this.delta = 0;
     this.state = 1;
     this.model.position.set(0, 0, 0);
   }
 
-  updateScale(deltat: number) {
+  #updateScale(deltat: number) {
     if (this.state === 1) {
       this.delta += deltat;
       const x = 0.21 + this.delta / 1000;
@@ -88,16 +97,7 @@ class MusicNoteParticle {
     }
   }
 
-  updatePosition(deltat: number) {
+  #updatePosition(deltat: number) {
     this.model.translateOnAxis(this.axis, deltat / 1000);
-  }
-
-  update(deltat: number) {
-    if (this.scale <= 0) {
-      this.reset();
-    }
-    this.updateScale(deltat);
-    this.model.scale.set(this.scale, this.scale, this.scale);
-    this.updatePosition(deltat);
   }
 }
