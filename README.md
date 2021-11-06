@@ -1,13 +1,13 @@
 # Spotify Hall of Fame
 
+![Continuous Deployment](https://github.com/MarioJim/SpotifyHallOfFame/workflows/Continuous%20Deployment/badge.svg)
+
 Proyecto final de la materia Gráficas computacionales
 
-## Equipo #2
+## Equipo #2.2
 
 Integrantes:
 
-- Alejandra Robles Macías
-- Manuel Ahumada Rodríguez
 - Mario Emilio Jiménez Vizcaíno
 
 ## Requerimientos

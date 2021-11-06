@@ -7,12 +7,23 @@
     <title>Spotify Hall of Fame</title>
     <script defer src="./main.bundle.js"></script>
     <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+      }
       img {
         width: 200px;
+      }
+      #webglcanvas {
+        width: 100%;
+        height: 100%;
+        display: block;
       }
     </style>
   </head>
   <body>
+    <canvas id="webglcanvas"></canvas>
     <div id="login-page" style="display: none">
       <h1>Login Page</h1>
       <button id="login-btn">Log in with Spotify</button>
@@ -34,7 +45,6 @@
         que todas las notas salgan del mismo punto, con un ángulo aleatorio y
         con inicios aleatorios
       </p>
-      <canvas id="webglcanvas" width="800" height="500"></canvas>
       <iframe
         width="600"
         height="320"
