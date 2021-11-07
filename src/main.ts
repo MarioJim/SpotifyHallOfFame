@@ -6,10 +6,12 @@ import Hall from './hall';
 import MusicNoteParticleSystem from './particles';
 import loadSpotifyData from './spotify';
 import TextGenerator from './text';
+import WallpaperManager from './wallpaper';
 
 const audioPlayer = new AudioPlayer();
 const halls: Hall[] = [];
 const textGenerator = new TextGenerator();
+const wallpaperMgr = new WallpaperManager();
 
 const displayTableOfSongs = (title: string, songs: any[]) =>
   `<h3>${title}</h3><ul>` +
@@ -98,13 +100,13 @@ const createScene = async (canvas: HTMLCanvasElement) => {
   // particleSystem = new MusicNoteParticleSystem(scene, 9);
   // await particleSystem.loadAsync();
 
-  halls.push(new Hall(scene, (0 * Math.PI) / 3, textGenerator));
-  halls.push(new Hall(scene, (2 * Math.PI) / 3, textGenerator));
-  halls.push(new Hall(scene, (4 * Math.PI) / 3, textGenerator));
+  halls.push(new Hall(scene, (0 * Math.PI) / 3, "México", textGenerator, wallpaperMgr));
+  halls.push(new Hall(scene, (2 * Math.PI) / 3, "Global", textGenerator, wallpaperMgr));
+  halls.push(new Hall(scene, (4 * Math.PI) / 3, "Personal", textGenerator, wallpaperMgr));
 
-  await halls[0].loadAsync();
-  await halls[1].loadAsync();
-  await halls[2].loadAsync();
+  await halls[0].setWallpaper(1);
+  await halls[1].setWallpaper(1);
+  await halls[2].setWallpaper(1);
 };
 
 // main

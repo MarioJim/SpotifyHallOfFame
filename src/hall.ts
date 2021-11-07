@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { SpotifyTrack } from './spotify';
 import TextGenerator from './text';
+import WallpaperManager from './wallpaper';
 
 const HALL_WIDTH = 5;
 const HALL_LENGTH = 16;
@@ -8,36 +9,28 @@ const HALL_HEIGHT = 4;
 const CENTER_APOTHEM = HALL_WIDTH / (2 * Math.sqrt(3));
 const HALL_WALL_LENGTH = HALL_LENGTH - CENTER_APOTHEM;
 const ALBUM_COVER_SIZE = 1.8;
-const WALLPAPER = {
-  // url: './images/wall1.png',
-  // width: 300,
-  // height: 325,
-  url: './images/wall2.png',
-  width: 240,
-  height: 458,
-  scale: 2,
-  // url: './images/wall3.png',
-  // width: 400,
-  // height: 400,
-  // scale: 1,
-};
 
 export default class Hall {
-  hallGroup: THREE.Group;
+  root: THREE.Group;
   leftWall: THREE.Mesh;
   rightWall: THREE.Mesh;
+  endWall: THREE.Mesh;
+  endGroup: THREE.Group;
   trackGroups: THREE.Group[];
   albumCoverMaterials: THREE.MeshPhongMaterial[];
   textGenerator: TextGenerator;
+  wallpaperMgr: WallpaperManager;
 
   constructor(
     parent: THREE.Object3D,
     rotation: number,
+    title: string,
     textGenerator: TextGenerator,
+    wallpaperMgr: WallpaperManager,
   ) {
-    this.hallGroup = new THREE.Group();
-    this.hallGroup.rotateY(rotation);
-    parent.add(this.hallGroup);
+    this.root = new THREE.Group();
+    this.root.rotateY(rotation);
+    parent.add(this.root);
 
     const tempMaterial = new THREE.MeshNormalMaterial();
 
@@ -45,7 +38,7 @@ export default class Hall {
     const floor = new THREE.Mesh(floorGeometry, tempMaterial);
     floor.position.setZ(HALL_LENGTH / 2);
     floor.rotateX(-Math.PI / 2);
-    this.hallGroup.add(floor);
+    this.root.add(floor);
 
     const wallGeometry = new THREE.PlaneGeometry(HALL_WALL_LENGTH, HALL_HEIGHT);
 
@@ -53,15 +46,52 @@ export default class Hall {
     this.leftWall.position.setX(HALL_WIDTH / 2);
     this.leftWall.position.setY(HALL_HEIGHT / 2);
     this.leftWall.position.setZ((HALL_LENGTH + CENTER_APOTHEM) / 2);
-    this.leftWall.rotateY(Math.PI / 2);
-    this.hallGroup.add(this.leftWall);
+    this.leftWall.rotateY(-Math.PI / 2);
+    this.root.add(this.leftWall);
 
     this.rightWall = new THREE.Mesh(wallGeometry, tempMaterial);
     this.rightWall.position.setX(-HALL_WIDTH / 2);
     this.rightWall.position.setY(HALL_HEIGHT / 2);
     this.rightWall.position.setZ((HALL_LENGTH + CENTER_APOTHEM) / 2);
-    this.rightWall.rotateY(-Math.PI / 2);
-    this.hallGroup.add(this.rightWall);
+    this.rightWall.rotateY(Math.PI / 2);
+    this.root.add(this.rightWall);
+
+    this.endGroup = new THREE.Group();
+    this.endGroup.position.setY(HALL_HEIGHT / 2);
+    this.endGroup.position.setZ(HALL_LENGTH);
+
+    const endWallGeometry = new THREE.PlaneGeometry(HALL_WIDTH, HALL_HEIGHT);
+    this.endWall = new THREE.Mesh(endWallGeometry, tempMaterial);
+    this.endWall.rotateY(Math.PI);
+    this.endGroup.add(this.endWall);
+
+    const endWallTop10Text = textGenerator.createText(
+      "Top 10",
+      "regular",
+      0.4,
+      "white",
+      "center",
+      HALL_WIDTH,
+    );
+    endWallTop10Text.rotateY(Math.PI);
+    endWallTop10Text.translateY(0.4);
+    endWallTop10Text.translateZ(0.01);
+    this.endGroup.add(endWallTop10Text);
+
+    const endWallTitleText = textGenerator.createText(
+      title,
+      "semibold",
+      0.4,
+      "normal",
+      "center",
+      HALL_WIDTH,
+    );
+    endWallTitleText.rotateY(Math.PI);
+    endWallTitleText.translateY(-0.2);
+    endWallTitleText.translateZ(0.01);
+    this.endGroup.add(endWallTitleText);
+
+    this.root.add(this.endGroup);
 
     this.trackGroups = Array.from(Array(10).keys()).map((idx) => {
       const trackGroup = new THREE.Group();
@@ -79,31 +109,24 @@ export default class Hall {
       return trackGroup;
     });
 
-    this.trackGroups.forEach((trackGroup) => this.hallGroup.add(trackGroup));
+    this.trackGroups.forEach((trackGroup) => this.root.add(trackGroup));
 
     this.albumCoverMaterials = [];
-
     this.textGenerator = textGenerator;
+    this.wallpaperMgr = wallpaperMgr;
   }
 
-  async loadAsync() {
-    const wallpaperTextureLoader = new THREE.TextureLoader();
-    const wallpaperTexture = await wallpaperTextureLoader.loadAsync(
-      WALLPAPER.url,
-    );
-    wallpaperTexture.wrapS = THREE.RepeatWrapping;
-    wallpaperTexture.wrapT = THREE.RepeatWrapping;
-    wallpaperTexture.repeat.set(
-      WALLPAPER.scale * (HALL_LENGTH - CENTER_APOTHEM),
-      WALLPAPER.scale * ((HALL_HEIGHT * WALLPAPER.width) / WALLPAPER.height),
+  async setWallpaper(wallpaperIdx: 0 | 1 | 2) {
+    const { sides, end } = await this.wallpaperMgr.getWallpaper(
+      wallpaperIdx,
+      HALL_WIDTH,
+      HALL_HEIGHT,
+      HALL_WALL_LENGTH,
     );
 
-    const wallpaperMaterial = new THREE.MeshPhongMaterial({
-      map: wallpaperTexture,
-      side: THREE.DoubleSide,
-    });
-    this.leftWall.material = wallpaperMaterial;
-    this.rightWall.material = wallpaperMaterial;
+    this.leftWall.material = sides;
+    this.rightWall.material = sides;
+    this.endWall.material = end;
   }
 
   async setTracks(tracks: SpotifyTrack[]) {
@@ -132,6 +155,7 @@ export default class Hall {
         `${idx + 1}`,
         'semibold',
         0.5,
+        "normal",
         'left',
         ALBUM_COVER_SIZE,
       );
@@ -143,6 +167,7 @@ export default class Hall {
         track.name,
         'semibold',
         0.1,
+        "white",
         'center',
         ALBUM_COVER_SIZE,
       );
@@ -154,6 +179,7 @@ export default class Hall {
         track.artists[0].name,
         'regular',
         0.1,
+        "white",
         'center',
         ALBUM_COVER_SIZE,
       );
