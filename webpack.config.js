@@ -30,7 +30,6 @@ module.exports = (env) => {
         ...common,
         devServer: {
           liveReload: true,
-          compress: true,
           open: true,
           port: 8080,
         },

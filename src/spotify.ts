@@ -15,9 +15,10 @@ interface SpotifyAlbum {
   }[];
 }
 
-interface SpotifyTrack {
+export interface SpotifyTrack {
   name: string;
   preview_url: string;
+  duration_ms: number;
   popularity: number;
   artists: SpotifyArtist[];
   album: SpotifyAlbum;
@@ -65,7 +66,18 @@ const loadSpotifyData = async (): Promise<AppData> => {
       data: await fetchFromSpotify(token),
     };
   }
-  return { status: 'no-token' };
+  const resGlobal = await fetch('global.json');
+  const global = await resGlobal.json();
+  const resMexico = await fetch('mexico.json');
+  const mexico = await resMexico.json();
+  return {
+    status: 'ok',
+    data: {
+      global,
+      mexico,
+      personal: global,
+    },
+  };
 };
 
 export default loadSpotifyData;
