@@ -1,57 +1,65 @@
 import * as THREE from 'three';
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
 
+type MusicState = 'play' | 'pause';
 export default class MusicNoteParticleSystem {
   parent: THREE.Object3D;
   n: number;
   animation: boolean;
-  particlePool: MusicNoteParticle[];
+  particles: MusicNoteParticle[];
+  musicState: MusicState;
 
   constructor(parent: THREE.Object3D, n: number) {
     this.parent = parent;
     this.n = n;
     this.animation = true;
+    this.musicState = 'pause';
   }
 
-  async loadAsync() {
-    const [key1, key2] = await loadNoteKeysModels();
-    this.particlePool = Array.from({ length: this.n }, (_, i) => {
+  async load() {
+    const [key1, key2] = await this.#loadModels();
+
+    this.particles = Array.from({ length: this.n }, (_, i) => {
       const model = Math.random() > 0.5 ? key1.clone() : key2.clone();
       model.position.set(i - 4, 0, 0);
       this.parent.add(model);
-      return new MusicNoteParticle(model);
+      return new MusicNoteParticle(model, this.musicState);
     });
   }
 
+  /**
+   * Loads two music notes from the models/keys.obj file
+   * @returns {Promise<THREE.Group[]>} both notes
+   */
+  async #loadModels(): Promise<THREE.Group[]> {
+    const loader = new FBXLoader();
+    const keys = await loader.loadAsync('models/keys.fbx');
+
+    const key1 = keys.children[0];
+    key1.scale.set(0.1, 0.1, 0.1);
+    key1.position.set(0, 0.15, 0);
+    key1.rotateX(Math.PI / 2);
+    const key1Group = new THREE.Group();
+    key1Group.add(key1);
+
+    const key2 = keys.children[0];
+    key2.scale.set(0.1, 0.1, 0.1);
+    key2.position.set(0.1, 0.1, 0);
+    key2.rotateX(Math.PI / 2);
+    const key2Group = new THREE.Group();
+    key2Group.add(key2);
+
+    return [key1Group, key2Group];
+  }
+
+  playPause(newMusicState: MusicState) {
+    this.musicState = newMusicState;
+  }
+
   update(deltat: number) {
-    this.particlePool.forEach((p) => p.update(deltat));
+    this.particles.forEach((p) => p.update(deltat, this.musicState));
   }
 }
-
-/**
- * Loads two music notes from the models/keys.obj file
- * @returns {Promise<THREE.Group[]>} both notes
- */
-const loadNoteKeysModels = async (): Promise<THREE.Group[]> => {
-  const loader = new FBXLoader();
-  const keys = await loader.loadAsync('models/keys.fbx');
-
-  const key1 = keys.children[0];
-  key1.scale.set(0.1, 0.1, 0.1);
-  key1.position.set(0, 0.15, 0);
-  key1.rotateX(Math.PI / 2);
-  const key1Group = new THREE.Group();
-  key1Group.add(key1);
-
-  const key2 = keys.children[0];
-  key2.scale.set(0.1, 0.1, 0.1);
-  key2.position.set(0.1, 0.1, 0);
-  key2.rotateX(Math.PI / 2);
-  const key2Group = new THREE.Group();
-  key2Group.add(key2);
-
-  return [key1Group, key2Group];
-};
 
 class MusicNoteParticle {
   model: THREE.Object3D;
@@ -59,15 +67,21 @@ class MusicNoteParticle {
   scale: number;
   axis: THREE.Vector3;
   delta: number;
+  musicState: MusicState;
 
-  constructor(model: THREE.Group) {
+  constructor(model: THREE.Group, musicState: MusicState) {
     this.model = model.children[0];
     this.state = 0;
     this.scale = 0;
     this.axis = new THREE.Vector3(0, 0, 0.5);
+    this.musicState = musicState;
   }
 
-  update(deltat: number) {
+  update(deltat: number, musicState: MusicState) {
+    if (musicState !== this.musicState) {
+      // TODO: Listen to change
+      this.musicState = musicState;
+    }
     if (this.scale <= 0) {
       this.#reset();
     }

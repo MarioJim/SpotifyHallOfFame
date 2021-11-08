@@ -4,7 +4,6 @@ import {
   TextGeometry,
   TextGeometryParameters,
 } from 'three/examples/jsm/geometries/TextGeometry';
-import { Material } from 'three';
 
 const REGULAR_FONT_URL = 'Poppins_Regular.json';
 const SEMIBOLD_FONT_URL = 'Poppins_SemiBold_Regular.json';
@@ -25,7 +24,7 @@ export default class TextGenerator {
     this.whiteMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
   }
 
-  async loadAsync() {
+  async load() {
     const fontLoader = new FontLoader();
     const [regularFont, semiboldFont] = await Promise.all([
       fontLoader.loadAsync(REGULAR_FONT_URL),

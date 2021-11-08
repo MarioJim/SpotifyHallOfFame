@@ -1,27 +1,35 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
+import AlbumCoverManager from './albumcovers';
 import AudioPlayer from './audio';
 import Hall from './hall';
 import MusicNoteParticleSystem from './particles';
+import RecordPlayer from './recordplayer';
 import loadSpotifyData from './spotify';
 import TextGenerator from './text';
 import WallpaperManager from './wallpaper';
 
+const coversManager = new AlbumCoverManager();
 const audioPlayer = new AudioPlayer();
-const halls: Hall[] = [];
 const textGenerator = new TextGenerator();
 const wallpaperMgr = new WallpaperManager();
 
-const displayTableOfSongs = (title: string, songs: any[]) =>
-  `<h3>${title}</h3><ul>` +
-  songs.map((s) => `<li>${s.name} by ${s.artists[0].name}</li>`).join('') +
-  '</ul>';
+const halls: Hall[] = ['México', 'Global', 'Personal'].map(
+  (title, idx) =>
+    new Hall(
+      (2 * idx * Math.PI) / 3,
+      title,
+      coversManager,
+      textGenerator,
+      wallpaperMgr,
+    ),
+);
+const recordPlayer = new RecordPlayer(coversManager);
 
 let renderer: THREE.WebGLRenderer | null = null,
   scene: THREE.Scene | null = null,
   camera: THREE.PerspectiveCamera | null = null,
-  root: THREE.Object3D | null = null,
   controls: OrbitControls | null = null;
 
 let raycaster = new THREE.Raycaster(),
@@ -80,7 +88,7 @@ const createScene = async (canvas: HTMLCanvasElement) => {
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0.3, 0.3, 0.3);
 
-  const ambientLight = new THREE.AmbientLight(0xdddddd);
+  const ambientLight = new THREE.AmbientLight(0xdddddd, 1);
   scene.add(ambientLight);
 
   // Add a camera so we can view the scene
@@ -93,36 +101,35 @@ const createScene = async (canvas: HTMLCanvasElement) => {
   camera.position.setY(10);
   camera.position.setZ(10);
 
+  // TODO: Replace for walking controls
   controls = new OrbitControls(camera, renderer.domElement);
 
-  root = new THREE.Object3D();
-
   // particleSystem = new MusicNoteParticleSystem(scene, 9);
-  // await particleSystem.loadAsync();
+  // await particleSystem.load();
 
-  halls.push(new Hall(scene, (0 * Math.PI) / 3, "México", textGenerator, wallpaperMgr));
-  halls.push(new Hall(scene, (2 * Math.PI) / 3, "Global", textGenerator, wallpaperMgr));
-  halls.push(new Hall(scene, (4 * Math.PI) / 3, "Personal", textGenerator, wallpaperMgr));
+  halls.forEach(async (hall) => {
+    await Promise.all([hall.setWallpaper(1), hall.drawEndWall()]);
+    hall.addTo(scene);
+  });
 
-  await halls[0].setWallpaper(1);
-  await halls[1].setWallpaper(1);
-  await halls[2].setWallpaper(1);
+  await recordPlayer.load();
+  recordPlayer.addToScene(scene);
 };
 
 // main
 (async () => {
-  await textGenerator.loadAsync();
+  await textGenerator.load();
   const canvas = document.getElementById('webglcanvas') as HTMLCanvasElement;
   await createScene(canvas);
   animate();
 
-  const data = await loadSpotifyData();
-  if (data.status === 'ok') {
-    const { mexico, global, personal } = data.data;
-    await halls[0].setTracks(mexico);
-    await halls[1].setTracks(global);
-    await halls[2].setTracks(personal);
-  } else {
+  const { global, mexico, personal } = await loadSpotifyData();
+  await halls[0].setTracks(mexico);
+  await halls[1].setTracks(global);
+  await halls[2].setTracks(personal);
+
+  // TODO: Replace for login to Spotify button in scene
+  if (!personal) {
     document.getElementById('login-page')!.style.display = 'block';
     document.getElementById('login-btn')!.addEventListener('click', () => {
       const spotifyAuthParams = new URLSearchParams();

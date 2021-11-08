@@ -25,12 +25,10 @@ export interface SpotifyTrack {
 }
 
 interface SpotifyData {
-  personal: SpotifyTrack[];
   global: SpotifyTrack[];
   mexico: SpotifyTrack[];
+  personal?: SpotifyTrack[];
 }
-
-type AppData = { status: 'ok'; data: SpotifyData } | { status: 'no-token' };
 
 const getAccessToken = () => {
   const params = new URLSearchParams(window.location.hash.substr(1));
@@ -58,25 +56,17 @@ const fetchFromSpotify = async (accessToken: string): Promise<SpotifyData> => {
   return { personal, global, mexico };
 };
 
-const loadSpotifyData = async (): Promise<AppData> => {
+const loadSpotifyData = async (): Promise<SpotifyData> => {
   const token = getAccessToken();
   if (token) {
-    return {
-      status: 'ok',
-      data: await fetchFromSpotify(token),
-    };
+    return await fetchFromSpotify(token);
   }
+
   const resGlobal = await fetch('global.json');
-  const global = await resGlobal.json();
   const resMexico = await fetch('mexico.json');
-  const mexico = await resMexico.json();
   return {
-    status: 'ok',
-    data: {
-      global,
-      mexico,
-      personal: global,
-    },
+    global: await resGlobal.json(),
+    mexico: await resMexico.json(),
   };
 };
 
