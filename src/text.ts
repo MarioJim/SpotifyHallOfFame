@@ -1,14 +1,10 @@
 import * as THREE from 'three';
-import { FontLoader, Font } from 'three/examples/jsm/loaders/FontLoader';
-import {
-  TextGeometry,
-  TextGeometryParameters,
-} from 'three/examples/jsm/geometries/TextGeometry';
+import { FontLoader, Font } from '@three/loaders/FontLoader';
+import { TextGeometry } from '@three/geometries/TextGeometry';
 
 const REGULAR_FONT_URL = 'Poppins_Regular.json';
 const SEMIBOLD_FONT_URL = 'Poppins_SemiBold_Regular.json';
 
-type FontType = 'regular' | 'semibold';
 type MaterialType = 'normal' | 'white';
 type Anchor = 'left' | 'center' | 'right';
 type Axis = 'x' | 'y' | 'z';
@@ -35,16 +31,64 @@ export default class TextGenerator {
     this.semiboldFont = semiboldFont;
   }
 
-  createText(
+  newRegular(
     text: string,
-    type: FontType,
+    params: {
+      size?: number;
+      materialType?: MaterialType;
+      horizAnchor?: Anchor;
+      maxWidth?: number;
+    },
+  ): THREE.Group {
+    const size = params.size || 0.1;
+    const materialType = params.materialType || 'white';
+    const horizAnchor = params.horizAnchor || 'left';
+    const maxWidth = params.maxWidth || Infinity;
+
+    return this.#renderText(
+      text,
+      this.regularFont,
+      size,
+      this.#getMaterialForType(materialType),
+      horizAnchor,
+      maxWidth,
+    );
+  }
+
+  newBold(
+    text: string,
+    params: {
+      size?: number;
+      materialType?: MaterialType;
+      horizAnchor?: Anchor;
+      maxWidth?: number;
+    },
+  ): THREE.Group {
+    const size = params.size || 0.1;
+    const materialType = params.materialType || 'white';
+    const horizAnchor = params.horizAnchor || 'left';
+    const maxWidth = params.maxWidth || Infinity;
+
+    return this.#renderText(
+      text,
+      this.semiboldFont,
+      size,
+      this.#getMaterialForType(materialType),
+      horizAnchor,
+      maxWidth,
+    );
+  }
+
+  #renderText(
+    text: string,
+    font: Font,
     size: number,
-    materialType: MaterialType,
+    material: THREE.Material,
     horizAnchor: Anchor,
     maxWidth: number,
   ): THREE.Group {
-    const params: TextGeometryParameters = {
-      font: this.#getFontForType(type),
+    const params = {
+      font,
       size,
       height: 0.01,
       curveSegments: 4,
@@ -88,10 +132,7 @@ export default class TextGenerator {
     const group = new THREE.Group();
 
     geometries.forEach((geometry, idx) => {
-      const mesh = new THREE.Mesh(
-        geometry,
-        this.#getMaterialForType(materialType),
-      );
+      const mesh = new THREE.Mesh(geometry, material);
       const bBox = geometry.boundingBox;
       mesh.position.setX(this.#getPosForAnchor(horizAnchor, bBox, 'x'));
       mesh.position.setY(-1.3 * idx * size);
@@ -102,14 +143,6 @@ export default class TextGenerator {
     return group;
   }
 
-  #getFontForType(type: FontType): Font {
-    if (type === 'regular') {
-      return this.regularFont;
-    } else if (type === 'semibold') {
-      return this.semiboldFont;
-    }
-  }
-
   #getMaterialForType(type: MaterialType): THREE.Material {
     if (type === 'normal') {
       return this.normalMaterial;
@@ -118,17 +151,13 @@ export default class TextGenerator {
     }
   }
 
-  #getPosForAnchor(
-    horizAnchor: Anchor,
-    boundingBox: THREE.Box3,
-    axis: Axis,
-  ): number {
-    const { max, min } = boundingBox;
-    if (horizAnchor === 'left') {
+  #getPosForAnchor(anchor: Anchor, bBox: THREE.Box3, axis: Axis): number {
+    const { max, min } = bBox;
+    if (anchor === 'left') {
       return -min[axis];
-    } else if (horizAnchor === 'center') {
+    } else if (anchor === 'center') {
       return -0.5 * (max[axis] + min[axis]);
-    } else if (horizAnchor === 'right') {
+    } else if (anchor === 'right') {
       return -max[axis];
     }
   }

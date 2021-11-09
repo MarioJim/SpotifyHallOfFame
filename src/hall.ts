@@ -113,27 +113,22 @@ export default class Hall {
   }
 
   async drawEndWall() {
-    const endWallTop10Text = this.textGenerator.createText(
-      'Top 10',
-      'regular',
-      0.4,
-      'white',
-      'center',
-      HALL_WIDTH,
-    );
+    const endWallTop10Text = this.textGenerator.newRegular('Top 10', {
+      size: 0.4,
+      horizAnchor: 'center',
+      maxWidth: HALL_WIDTH,
+    });
     endWallTop10Text.rotateY(Math.PI);
     endWallTop10Text.translateY(0.4);
     endWallTop10Text.translateZ(0.01);
     this.endGroup.add(endWallTop10Text);
 
-    const endWallTitleText = this.textGenerator.createText(
-      this.title,
-      'semibold',
-      0.4,
-      'normal',
-      'center',
-      HALL_WIDTH,
-    );
+    const endWallTitleText = this.textGenerator.newBold(this.title, {
+      size: 0.4,
+      materialType: 'normal',
+      horizAnchor: 'center',
+      maxWidth: HALL_WIDTH,
+    });
     endWallTitleText.rotateY(Math.PI);
     endWallTitleText.translateY(-0.2);
     endWallTitleText.translateZ(0.01);
@@ -162,37 +157,26 @@ export default class Hall {
       const albumCover = new THREE.Mesh(albumCoverGeometry, albumCoverMaterial);
       this.trackGroups[idx].add(albumCover);
 
-      const idxText = this.textGenerator.createText(
-        `${idx + 1}`,
-        'semibold',
-        0.5,
-        'normal',
-        'left',
-        ALBUM_COVER_SIZE,
-      );
+      const idxText = this.textGenerator.newBold(`${idx + 1}`, {
+        size: 0.5,
+        materialType: 'normal',
+        maxWidth: ALBUM_COVER_SIZE,
+      });
       idxText.translateY(0.2 - ALBUM_COVER_SIZE / 2);
       idxText.translateX(0.2 - ALBUM_COVER_SIZE / 2);
       this.trackGroups[idx].add(idxText);
 
-      const songNameText = this.textGenerator.createText(
-        track.name,
-        'semibold',
-        0.1,
-        'white',
-        'center',
-        ALBUM_COVER_SIZE,
-      );
+      const songNameText = this.textGenerator.newBold(track.name, {
+        horizAnchor: 'center',
+        maxWidth: ALBUM_COVER_SIZE,
+      });
       songNameText.translateY(-0.2 - ALBUM_COVER_SIZE / 2);
       const songTextBBox = new THREE.Box3().setFromObject(songNameText);
       this.trackGroups[idx].add(songNameText);
 
-      const artistNameText = this.textGenerator.createText(
+      const artistNameText = this.textGenerator.newRegular(
         track.artists[0].name,
-        'regular',
-        0.1,
-        'white',
-        'center',
-        ALBUM_COVER_SIZE,
+        { horizAnchor: 'center', maxWidth: ALBUM_COVER_SIZE },
       );
       artistNameText.translateY(songTextBBox.min.y - 0.15);
       this.trackGroups[idx].add(artistNameText);

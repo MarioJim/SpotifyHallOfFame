@@ -7,6 +7,10 @@
     "target": "es6",
     "allowJs": true,
     "sourceMap": true,
-    "lib": ["ESNext", "DOM", "DOM.Iterable"]
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "baseUrl": "src/",
+    "paths": {
+      "@three/*": ["../node_modules/three/examples/jsm/*"]
+    }
   }
 }

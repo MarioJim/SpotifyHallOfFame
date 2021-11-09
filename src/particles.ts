@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
+import { FBXLoader } from '@three/loaders/FBXLoader';
 
 type MusicState = 'play' | 'pause';
 export default class MusicNoteParticleSystem {

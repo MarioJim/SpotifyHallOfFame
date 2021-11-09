@@ -76,6 +76,11 @@
   resolved "https://registry.yarnpkg.com/@types/three/-/three-0.133.1.tgz#6007faaf7f6b53339150a2a1fe57121e4c6607c1"
   integrity sha512-XqBrP/+kbs+o0CYRhCVVE95v7FaL2bO5Z7+3VQJE0nEyjo+9LoLfeNgZITOnndKHxM+7ltEciAIR7uE0SZlsOg==
 
+"@vxna/optimize-three-webpack-plugin@^5.1.0":
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/@vxna/optimize-three-webpack-plugin/-/optimize-three-webpack-plugin-5.1.0.tgz#eaa62e9d44f55709a95d0a7ee9e9440246e873af"
+  integrity sha512-VFMnSJZ/RIBdNwbH79Fc5ZvRaiQtJ9inl/hW5OJA0CFxVp1eUknOppeoA0iib4eQRheoLFOATFWALCL+p3skCA==
+
 "@webassemblyjs/ast@1.11.1":
   version "1.11.1"
   resolved "https://registry.yarnpkg.com/@webassemblyjs/ast/-/ast-1.11.1.tgz#2bfd767eae1a6996f432ff7e8d7fc75679c0b6a7"

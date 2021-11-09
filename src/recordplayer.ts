@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { GLTFLoader } from '@three/loaders/GLTFLoader';
 import AlbumCoverManager from './albumcovers';
 
 const RECORD_PLAYER_MODEL_URL = 'models/record_player/scene.gltf';

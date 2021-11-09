@@ -4,9 +4,9 @@
 
 Proyecto final de la materia Gráficas computacionales
 
-## Equipo #2.2
+## Equipo #15
 
-Integrantes:
+Integrante:
 
 - Mario Emilio Jiménez Vizcaíno
 
@@ -23,10 +23,6 @@ Mostrará las canciones que más has escuchado, el top 10 de México y el top 10
 - Vista de canciones, una lista de las canciones más escuchadas por la persona y de dos playlists de Spotify
 
 ### Diseño de la página (colores, texto)
-
-Pantalla Landing (Ale)
-Pantalla contacto (Manu)
-Pantalla canciones (Mario)
 
 Colores: Azul y negro.
 Font: Gotham.

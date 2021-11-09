@@ -1,11 +1,19 @@
 const path = require('path');
 
-module.exports = (env) => {
-  const isProd = env && env.production;
-  const common = {
+const OptimizeThreePlugin = require('@vxna/optimize-three-webpack-plugin');
+
+module.exports = (env, argv) => {
+  const isProd = argv.mode === 'production';
+
+  let config = {
+    target: 'browserslist',
     entry: './src/main.ts',
     mode: isProd ? 'production' : 'development',
     devtool: isProd ? 'source-map' : 'eval-cheap-module-source-map',
+    plugins: [new OptimizeThreePlugin()],
+    performance: {
+      hints: false,
+    },
     module: {
       rules: [
         {
@@ -20,21 +28,24 @@ module.exports = (env) => {
       extensions: ['.ts', '.js'],
     },
     output: {
-      filename: 'main.bundle.js',
+      filename: '[name].bundle.js',
       path: path.resolve(__dirname, 'public'),
     },
   };
-  return isProd
-    ? common
-    : {
-        ...common,
-        devServer: {
-          liveReload: true,
-          open: true,
-          port: 8080,
-        },
-        stats: {
-          modulesSort: 'size',
-        },
-      };
+
+  if (!isProd) {
+    config = {
+      ...config,
+      devServer: {
+        liveReload: true,
+        open: true,
+        port: 8080,
+      },
+      stats: {
+        modulesSort: 'size',
+      },
+    };
+  }
+
+  return config;
 };

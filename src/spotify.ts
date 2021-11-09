@@ -30,9 +30,9 @@ interface SpotifyData {
   personal?: SpotifyTrack[];
 }
 
-const getAccessToken = () => {
+const getAccessToken = (): string | null => {
   const params = new URLSearchParams(window.location.hash.substr(1));
-  if (params.has('access_token') && params.get('token_type') == 'Bearer')
+  if (params.has('access_token') && params.get('token_type') === 'Bearer')
     return params.get('access_token');
   return null;
 };

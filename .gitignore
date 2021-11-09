@@ -104,4 +104,4 @@ dist
 .tern-port
 
 # Project files
-public/main.bundle.js*
+public/*.bundle.js*
