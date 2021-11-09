@@ -6,15 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/png" href="favicon.png" />
     <title>Spotify Hall of Fame</title>
-    <script src="main.bundle.js"></script>
+    <script defer src="main.bundle.js"></script>
     <style>
       html,
       body {
         margin: 0;
         height: 100%;
-      }
-      img {
-        width: 200px;
       }
       #webglcanvas {
         width: 100%;
@@ -25,9 +22,5 @@
   </head>
   <body>
     <canvas id="webglcanvas"></canvas>
-    <div id="login-page" style="display: none">
-      <h1>Login Page</h1>
-      <button id="login-btn">Log in with Spotify</button>
-    </div>
   </body>
 </html>

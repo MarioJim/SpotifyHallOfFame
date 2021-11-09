@@ -16,6 +16,7 @@ export default class Hall {
   leftWall: THREE.Mesh;
   rightWall: THREE.Mesh;
   endWall: THREE.Mesh;
+  endTitles: THREE.Group;
   endGroup: THREE.Group;
   trackGroups: THREE.Group[];
 
@@ -64,12 +65,16 @@ export default class Hall {
     this.endGroup = new THREE.Group();
     this.endGroup.position.setY(HALL_HEIGHT / 2);
     this.endGroup.position.setZ(HALL_LENGTH);
+    this.endGroup.rotateY(Math.PI);
+    this.root.add(this.endGroup);
+
+    this.endTitles = new THREE.Group();
+    this.endTitles.translateZ(0.01);
+    this.endGroup.add(this.endTitles);
 
     const endWallGeometry = new THREE.PlaneGeometry(HALL_WIDTH, HALL_HEIGHT);
     this.endWall = new THREE.Mesh(endWallGeometry, tempMaterial);
-    this.endWall.rotateY(Math.PI);
     this.endGroup.add(this.endWall);
-    this.root.add(this.endGroup);
 
     this.trackGroups = Array.from(Array(10).keys()).map((idx) => {
       const trackGroup = new THREE.Group();
@@ -118,10 +123,8 @@ export default class Hall {
       horizAnchor: 'center',
       maxWidth: HALL_WIDTH,
     });
-    endWallTop10Text.rotateY(Math.PI);
     endWallTop10Text.translateY(0.4);
-    endWallTop10Text.translateZ(0.01);
-    this.endGroup.add(endWallTop10Text);
+    this.endTitles.add(endWallTop10Text);
 
     const endWallTitleText = this.textGenerator.newBold(this.title, {
       size: 0.4,
@@ -129,19 +132,49 @@ export default class Hall {
       horizAnchor: 'center',
       maxWidth: HALL_WIDTH,
     });
-    endWallTitleText.rotateY(Math.PI);
     endWallTitleText.translateY(-0.2);
-    endWallTitleText.translateZ(0.01);
-    this.endGroup.add(endWallTitleText);
+    this.endTitles.add(endWallTitleText);
   }
 
-  async setTracks(tracks: SpotifyTrack[] | undefined) {
-    if (!tracks) {
-      this.endGroup.position.z = CENTER_APOTHEM;
-      // TODO: Add login to Spotify button
-      return;
-    }
+  setLoginButton(): THREE.Object3D {
+    // Close path
+    this.endGroup.position.z = CENTER_APOTHEM;
+    // Move titles up
+    this.endTitles.translateY(0.4);
+    // Show button
 
+    const loginButton = new THREE.Group();
+    loginButton.translateY(-0.4);
+    loginButton.translateZ(0.01);
+
+    const LOGIN_BUTTON_WIDTH = 2;
+    const LOGIN_BUTTON_TEXT_SIZE = 0.15;
+    const loginButtonBodyGeom = new THREE.BoxGeometry(
+      LOGIN_BUTTON_WIDTH,
+      0.7,
+      0.01,
+    );
+    const loginButtonBody = new THREE.Mesh(
+      loginButtonBodyGeom,
+      new THREE.MeshNormalMaterial(),
+    );
+    loginButton.add(loginButtonBody);
+
+    const loginButtonText = this.textGenerator.newRegular('Login to Spotify', {
+      size: LOGIN_BUTTON_TEXT_SIZE,
+      horizAnchor: 'center',
+      maxWidth: LOGIN_BUTTON_WIDTH,
+    });
+    loginButtonText.translateZ(0.01);
+    loginButtonText.translateY(-LOGIN_BUTTON_TEXT_SIZE / 2);
+    loginButton.add(loginButtonText);
+
+    this.endGroup.add(loginButton);
+
+    return loginButton;
+  }
+
+  async setTracks(tracks: SpotifyTrack[]): Promise<THREE.Object3D[]> {
     const textureUrls = tracks.map((track) => track.album.images[0].url);
     const albumCoverMaterials = await this.coversManager.fetchAlbums(
       textureUrls,
@@ -181,5 +214,7 @@ export default class Hall {
       artistNameText.translateY(songTextBBox.min.y - 0.15);
       this.trackGroups[idx].add(artistNameText);
     });
+
+    return this.trackGroups;
   }
 }

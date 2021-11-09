@@ -14,8 +14,16 @@ export default class RecordPlayer {
   camera: THREE.Camera;
   coversManager: AlbumCoverManager;
 
-  constructor(coversManager: AlbumCoverManager) {
+  constructor(
+    camera: THREE.Camera,
+    scene: THREE.Scene,
+    coversManager: AlbumCoverManager,
+  ) {
+    this.camera = camera;
+
     this.root = new THREE.Group();
+    scene.add(this.root);
+
     this.light = new THREE.DirectionalLight(0xffffff, 0.2);
     this.light.translateY(1);
     this.root.add(this.light);
@@ -27,6 +35,11 @@ export default class RecordPlayer {
     this.album.translateZ(0.47);
 
     this.coversManager = coversManager;
+
+    // TODO: Remove, only for demo
+    this.changeAlbum(
+      'https://i.scdn.co/image/ab67616d0000b273be82673b5f79d9658ec0a9fd',
+    );
   }
 
   async load() {
@@ -34,6 +47,7 @@ export default class RecordPlayer {
     const gltf = await loader.loadAsync(RECORD_PLAYER_MODEL_URL);
 
     this.model = gltf.scene.children[0].children[0].children[0];
+    console.log(this.model);
     this.model.rotateX(RECORD_PLAYER_X_ROTATION);
     this.model.translateX(0.2);
     const bodyMesh = this.model.children[1].children[0] as THREE.Mesh;
@@ -41,16 +55,6 @@ export default class RecordPlayer {
 
     this.light.target = this.model;
     this.root.add(this.model);
-  }
-
-  linkToCamera(camera: THREE.Camera, scene: THREE.Scene) {
-    this.camera = camera;
-    scene.add(this.root);
-
-    // TODO: Remove, only for demo
-    this.changeAlbum(
-      'https://i.scdn.co/image/ab67616d0000b273be82673b5f79d9658ec0a9fd',
-    );
   }
 
   async changeAlbum(imageUrl?: string) {

@@ -25,9 +25,9 @@ export interface SpotifyTrack {
 }
 
 interface SpotifyData {
-  global: SpotifyTrack[];
-  mexico: SpotifyTrack[];
-  personal?: SpotifyTrack[];
+  globalTracks: SpotifyTrack[];
+  mexicoTracks: SpotifyTrack[];
+  personalTracks?: SpotifyTrack[];
 }
 
 const getAccessToken = (): string | null => {
@@ -43,20 +43,20 @@ const spotifyFetch = (accessToken: string, urlPath: string): Promise<any> =>
   }).then((response) => response.json());
 
 const fetchFromSpotify = async (accessToken: string): Promise<SpotifyData> => {
-  const [personal, global, mexico] = await Promise.all([
-    spotifyFetch(accessToken, URL_PERSONAL_TOP).then((res) => res.items),
+  const [globalTracks, mexicoTracks, personalTracks] = await Promise.all([
     spotifyFetch(accessToken, URL_GLOBAL_TOP).then((res) =>
       res.items.map((i: any) => i.track),
     ),
     spotifyFetch(accessToken, URL_MEXICO_TOP).then((res) =>
       res.items.map((i: any) => i.track),
     ),
+    spotifyFetch(accessToken, URL_PERSONAL_TOP).then((res) => res.items),
   ]);
 
-  return { personal, global, mexico };
+  return { globalTracks, mexicoTracks, personalTracks };
 };
 
-const loadSpotifyData = async (): Promise<SpotifyData> => {
+export const loadSpotifyData = async (): Promise<SpotifyData> => {
   const token = getAccessToken();
   if (token) {
     return await fetchFromSpotify(token);
@@ -65,9 +65,21 @@ const loadSpotifyData = async (): Promise<SpotifyData> => {
   const resGlobal = await fetch('global.json');
   const resMexico = await fetch('mexico.json');
   return {
-    global: await resGlobal.json(),
-    mexico: await resMexico.json(),
+    globalTracks: await resGlobal.json(),
+    mexicoTracks: await resMexico.json(),
   };
 };
 
-export default loadSpotifyData;
+export const redirectToSpotifyLogin = (): void => {
+  const spotifyAuthParams = new URLSearchParams();
+  spotifyAuthParams.set('client_id', '78d27efbc5e84665b852ca8dd63ea33f');
+  spotifyAuthParams.set('response_type', 'token');
+  spotifyAuthParams.set(
+    'redirect_uri',
+    window.location.origin + window.location.pathname,
+  );
+  spotifyAuthParams.set('scope', ['user-top-read'].join(' '));
+
+  const params = spotifyAuthParams.toString();
+  window.location.replace(`https://accounts.spotify.com/authorize?${params}`);
+};
