@@ -1,10 +1,8 @@
 import { OrbitControls } from '@three/controls/OrbitControls';
-
 import AlbumCoverManager from './albumcovers';
 import AudioPlayer from './audio';
 import { animate, createScene } from './environment';
 import Hall from './hall';
-import MusicNoteParticleSystem from './particles';
 import MousePointerControls from './pointer';
 import RecordPlayer from './recordplayer';
 import { loadSpotifyData, redirectToSpotifyLogin } from './spotify';
@@ -13,18 +11,23 @@ import WallpaperManager from './wallpaper';
 
 (async () => {
   const canvas = document.getElementById('webglcanvas') as HTMLCanvasElement;
-  const { renderer, scene, camera } = createScene(canvas);
+  const environment = createScene(canvas);
+  const { scene, camera } = environment;
 
   const audioPlayer = new AudioPlayer();
   const coversManager = new AlbumCoverManager();
   // TODO: Replace for walking controls
-  const orbitControls = new OrbitControls(camera, renderer.domElement);
+  const orbitControls = new OrbitControls(camera, canvas);
   const pointerControls = new MousePointerControls(camera);
   const textGenerator = new TextGenerator();
   const wallpaperMgr = new WallpaperManager();
 
-  const recordPlayer = new RecordPlayer(camera, scene, coversManager);
-  const particleSystem = new MusicNoteParticleSystem(scene, 9);
+  const recordPlayer = new RecordPlayer(
+    camera,
+    scene,
+    coversManager,
+    audioPlayer,
+  );
   const halls: Hall[] = ['México', 'Global', 'Personal'].map(
     (title, idx) =>
       new Hall(
@@ -42,7 +45,6 @@ import WallpaperManager from './wallpaper';
   // Load models and halls
   await Promise.all([
     recordPlayer.load(),
-    // particleSystem.load(),
     ...halls.map((hall) =>
       (async () => {
         await Promise.all([hall.setWallpaper(1), hall.drawEndWall()]);
@@ -62,7 +64,8 @@ import WallpaperManager from './wallpaper';
         const albums = await halls[idx].setTracks(tracks);
         albums.forEach((album, idx) =>
           pointerControls.addObjectAndHandler(album, () => {
-            console.log(tracks[idx]);
+            recordPlayer.changeTrack(tracks[idx]);
+            audioPlayer.playPauseTrack(tracks[idx]);
           }),
         );
       } else {
@@ -75,9 +78,5 @@ import WallpaperManager from './wallpaper';
   );
 
   // Render the scene and animate it
-  animate({ renderer, scene, camera }, [
-    orbitControls,
-    recordPlayer,
-    // particleSystem,
-  ]);
+  animate(environment, [orbitControls, recordPlayer]);
 })();

@@ -22,9 +22,9 @@ export default class MusicNoteParticleSystem {
 
     this.particles = Array.from({ length: this.n }, (_, i) => {
       const model = Math.random() > 0.5 ? key1.clone() : key2.clone();
-      model.position.set(i - 4, 0, 0);
+      model.position.set(0.3 * (i - 4), 0, 0);
       this.parent.add(model);
-      return new MusicNoteParticle(model, this.musicState);
+      return new MusicNoteParticle(model);
     });
   }
 
@@ -66,29 +66,37 @@ class MusicNoteParticle {
   model: THREE.Object3D;
   state: number;
   scale: number;
-  axis: THREE.Vector3;
   delta: number;
-  musicState: MusicState;
 
-  constructor(model: THREE.Group, musicState: MusicState) {
+  musicState: MusicState;
+  axis: THREE.Vector3;
+
+  constructor(model: THREE.Group) {
     this.model = model.children[0];
-    this.state = 0;
+    this.#reset();
     this.scale = 0;
+    this.model.scale.set(this.scale, this.scale, this.scale);
+
+    this.musicState = 'pause';
     this.axis = new THREE.Vector3(0, 0, 0.5);
-    this.musicState = musicState;
   }
 
-  update(deltat: number, musicState: MusicState) {
-    if (musicState !== this.musicState) {
-      // TODO: Listen to change
-      this.musicState = musicState;
+  update(deltat: number, systemMusicState: MusicState) {
+    if (systemMusicState === 'play') {
+      this.musicState = 'play';
     }
     if (this.scale <= 0) {
       this.#reset();
+      if (systemMusicState === 'pause') {
+        this.musicState = 'pause';
+      }
     }
-    this.#updateScale(deltat);
-    this.model.scale.set(this.scale, this.scale, this.scale);
-    this.#updatePosition(deltat);
+    if (this.musicState === 'play') {
+      // TODO: Improve animation
+      this.#updateScale(deltat);
+      this.model.scale.set(this.scale, this.scale, this.scale);
+      this.#updatePosition(deltat);
+    }
   }
 
   #reset() {

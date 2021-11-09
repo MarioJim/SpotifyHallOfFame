@@ -10,6 +10,8 @@ const HALL_HEIGHT = 4;
 const CENTER_APOTHEM = HALL_WIDTH / (2 * Math.sqrt(3));
 const HALL_WALL_LENGTH = HALL_LENGTH - CENTER_APOTHEM;
 const ALBUM_COVER_SIZE = 1.8;
+const LOGIN_BUTTON_WIDTH = 2;
+const LOGIN_BUTTON_TEXT_SIZE = 0.15;
 
 export default class Hall {
   root: THREE.Group;
@@ -147,8 +149,6 @@ export default class Hall {
     loginButton.translateY(-0.4);
     loginButton.translateZ(0.01);
 
-    const LOGIN_BUTTON_WIDTH = 2;
-    const LOGIN_BUTTON_TEXT_SIZE = 0.15;
     const loginButtonBodyGeom = new THREE.BoxGeometry(
       LOGIN_BUTTON_WIDTH,
       0.7,

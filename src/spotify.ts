@@ -17,6 +17,7 @@ interface SpotifyAlbum {
 
 export interface SpotifyTrack {
   name: string;
+  id: string;
   preview_url: string;
   duration_ms: number;
   popularity: number;

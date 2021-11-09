@@ -1,3 +1,5 @@
+import { SpotifyTrack } from 'spotify';
+
 interface InitialState {
   status: 'initial';
 }
@@ -18,12 +20,19 @@ type AudioPlayerState = InitialState | PausedState | PlayingState;
 
 export default class AudioPlayer {
   state: AudioPlayerState;
+  onSongEnd: () => void;
 
   constructor() {
     this.state = { status: 'initial' };
+    this.onSongEnd = () => {};
   }
 
-  playPause(url: string) {
+  setOnSongEnd(callback: () => void) {
+    this.onSongEnd = callback;
+  }
+
+  playPauseTrack(track: SpotifyTrack) {
+    const url = track.preview_url;
     if (this.state.status === 'initial') {
       this.#reset(url);
     } else if (this.state.status === 'playing') {
@@ -49,8 +58,13 @@ export default class AudioPlayer {
     player.autoplay = false;
     player.addEventListener('ended', () => {
       this.state = { status: 'initial' };
+      this.onSongEnd();
     });
-    player.play().catch((e) => console.error('Error playing audio: ' + e));
+
+    player.play().catch((e) => {
+      console.error('Error playing audio: ' + e);
+      this.onSongEnd();
+    });
 
     this.state = { status: 'playing', player, url };
   }
