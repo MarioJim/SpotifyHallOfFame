@@ -9,6 +9,13 @@ type MaterialType = 'normal' | 'white';
 type Anchor = 'left' | 'center' | 'right';
 type Axis = 'x' | 'y' | 'z';
 
+interface TextParams {
+  size: number;
+  materialType: MaterialType;
+  horizAnchor: Anchor;
+  maxWidth: number;
+}
+
 export default class TextGenerator {
   regularFont: Font;
   semiboldFont: Font;
@@ -31,15 +38,7 @@ export default class TextGenerator {
     this.semiboldFont = semiboldFont;
   }
 
-  newRegular(
-    text: string,
-    params: {
-      size?: number;
-      materialType?: MaterialType;
-      horizAnchor?: Anchor;
-      maxWidth?: number;
-    },
-  ): THREE.Group {
+  newRegular(text: string, params: Partial<TextParams>): THREE.Group {
     const size = params.size || 0.1;
     const materialType = params.materialType || 'white';
     const horizAnchor = params.horizAnchor || 'left';
@@ -55,15 +54,7 @@ export default class TextGenerator {
     );
   }
 
-  newBold(
-    text: string,
-    params: {
-      size?: number;
-      materialType?: MaterialType;
-      horizAnchor?: Anchor;
-      maxWidth?: number;
-    },
-  ): THREE.Group {
+  newBold(text: string, params: Partial<TextParams>): THREE.Group {
     const size = params.size || 0.1;
     const materialType = params.materialType || 'white';
     const horizAnchor = params.horizAnchor || 'left';

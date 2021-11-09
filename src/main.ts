@@ -10,8 +10,8 @@ import loadSpotifyData from './spotify';
 import TextGenerator from './text';
 import WallpaperManager from './wallpaper';
 
-const coversManager = new AlbumCoverManager();
 const audioPlayer = new AudioPlayer();
+const coversManager = new AlbumCoverManager();
 const textGenerator = new TextGenerator();
 const wallpaperMgr = new WallpaperManager();
 
@@ -45,11 +45,11 @@ const resizeRendererToDisplaySize = (renderer: THREE.WebGLRenderer) => {
   const pixelRatio = window.devicePixelRatio;
   const width = (canvas.clientWidth * pixelRatio) | 0;
   const height = (canvas.clientHeight * pixelRatio) | 0;
-  const needResize = canvas.width !== width || canvas.height !== height;
-  if (needResize) {
+  if (canvas.width !== width || canvas.height !== height) {
     renderer.setSize(width, height, false);
+    return true;
   }
-  return needResize;
+  return false;
 };
 
 const animate = () => {
@@ -69,6 +69,7 @@ const animate = () => {
 
   // Update camera's position
   controls.update();
+  recordPlayer.update(deltat);
 
   // particleSystem.update(deltat);
 
@@ -113,7 +114,7 @@ const createScene = async (canvas: HTMLCanvasElement) => {
   });
 
   await recordPlayer.load();
-  recordPlayer.addToScene(scene);
+  recordPlayer.linkToCamera(camera, scene);
 };
 
 // main
@@ -135,8 +136,10 @@ const createScene = async (canvas: HTMLCanvasElement) => {
       const spotifyAuthParams = new URLSearchParams();
       spotifyAuthParams.set('client_id', '78d27efbc5e84665b852ca8dd63ea33f');
       spotifyAuthParams.set('response_type', 'token');
-      const original_url = window.location.origin + window.location.pathname;
-      spotifyAuthParams.set('redirect_uri', original_url);
+      spotifyAuthParams.set(
+        'redirect_uri',
+        window.location.origin + window.location.pathname,
+      );
       spotifyAuthParams.set('scope', ['user-top-read'].join(' '));
       const params = spotifyAuthParams.toString();
       window.location.replace(

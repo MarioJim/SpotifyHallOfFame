@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { FBXLoader } from '@three/loaders/FBXLoader';
 
 type MusicState = 'play' | 'pause';
+
 export default class MusicNoteParticleSystem {
   parent: THREE.Object3D;
   n: number;
