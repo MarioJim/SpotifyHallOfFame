@@ -3,26 +3,28 @@ import { FBXLoader } from '@three/loaders/FBXLoader';
 
 type MusicState = 'play' | 'pause';
 
+const CYCLE_TIME = 3215;
+
 export default class MusicNoteParticleSystem {
   parent: THREE.Object3D;
   n: number;
   animation: boolean;
   particles: MusicNoteParticle[];
-  musicState: MusicState;
+  timeouts: NodeJS.Timeout[];
 
   constructor(parent: THREE.Object3D, n: number) {
     this.parent = parent;
     this.n = n;
     this.animation = true;
-    this.musicState = 'pause';
+    this.timeouts = [];
   }
 
   async load() {
     const [key1, key2] = await this.#loadModels();
 
-    this.particles = Array.from({ length: this.n }, (_, i) => {
+    this.particles = Array.from(Array(this.n).keys()).map((idx) => {
       const model = Math.random() > 0.5 ? key1.clone() : key2.clone();
-      model.position.set(0.3 * (i - 4), 0, 0);
+      model.position.set(0.3 * (idx - 4), 0, 0);
       this.parent.add(model);
       return new MusicNoteParticle(model);
     });
@@ -53,12 +55,30 @@ export default class MusicNoteParticleSystem {
     return [key1Group, key2Group];
   }
 
-  playPause(newMusicState: MusicState) {
-    this.musicState = newMusicState;
+  playAnimation() {
+    this.timeouts = this.particles
+      .map((particle) => ({ particle, sort: Math.random() }))
+      .sort((a, b) => a.sort - b.sort)
+      .map(({ particle }, idx) =>
+        setTimeout(() => {
+          particle.startAnimation();
+          if (idx + 1 === this.n) {
+            this.timeouts = [];
+          }
+        }, (idx * CYCLE_TIME) / this.n),
+      );
+  }
+
+  pauseAnimation() {
+    if (this.timeouts.length > 0) {
+      this.timeouts.forEach((timeout) => clearTimeout(timeout));
+      this.timeouts = [];
+    }
+    this.particles.forEach((part) => part.stopNextAnimation());
   }
 
   update(deltat: number) {
-    this.particles.forEach((p) => p.update(deltat, this.musicState));
+    this.particles.forEach((p) => p.update(deltat));
   }
 }
 
@@ -68,7 +88,8 @@ class MusicNoteParticle {
   scale: number;
   delta: number;
 
-  musicState: MusicState;
+  currMusicState: MusicState;
+  nextMusicState: MusicState;
   axis: THREE.Vector3;
 
   constructor(model: THREE.Group) {
@@ -77,22 +98,26 @@ class MusicNoteParticle {
     this.scale = 0;
     this.model.scale.set(this.scale, this.scale, this.scale);
 
-    this.musicState = 'pause';
+    this.currMusicState = 'pause';
+    this.nextMusicState = 'pause';
     this.axis = new THREE.Vector3(0, 0, 0.5);
   }
 
-  update(deltat: number, systemMusicState: MusicState) {
-    if (systemMusicState === 'play') {
-      this.musicState = 'play';
-    }
+  startAnimation() {
+    this.currMusicState = 'play';
+    this.nextMusicState = 'play';
+  }
+
+  stopNextAnimation() {
+    this.nextMusicState = 'pause';
+  }
+
+  update(deltat: number) {
     if (this.scale <= 0) {
       this.#reset();
-      if (systemMusicState === 'pause') {
-        this.musicState = 'pause';
-      }
+      this.currMusicState = this.nextMusicState;
     }
-    if (this.musicState === 'play') {
-      // TODO: Improve animation
+    if (this.currMusicState === 'play') {
       this.#updateScale(deltat);
       this.model.scale.set(this.scale, this.scale, this.scale);
       this.#updatePosition(deltat);
@@ -121,6 +146,6 @@ class MusicNoteParticle {
   }
 
   #updatePosition(deltat: number) {
-    this.model.translateOnAxis(this.axis, deltat / 1000);
+    this.model.translateOnAxis(this.axis, deltat / 800);
   }
 }

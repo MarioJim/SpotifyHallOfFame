@@ -43,24 +43,20 @@ const spotifyFetch = (accessToken: string, urlPath: string): Promise<any> =>
     headers: { Authorization: `Bearer ${accessToken}` },
   }).then((response) => response.json());
 
-const fetchFromSpotify = async (accessToken: string): Promise<SpotifyData> => {
-  const [globalTracks, mexicoTracks, personalTracks] = await Promise.all([
-    spotifyFetch(accessToken, URL_GLOBAL_TOP).then((res) =>
-      res.items.map((i: any) => i.track),
-    ),
-    spotifyFetch(accessToken, URL_MEXICO_TOP).then((res) =>
-      res.items.map((i: any) => i.track),
-    ),
-    spotifyFetch(accessToken, URL_PERSONAL_TOP).then((res) => res.items),
-  ]);
-
-  return { globalTracks, mexicoTracks, personalTracks };
-};
-
 export const loadSpotifyData = async (): Promise<SpotifyData> => {
   const token = getAccessToken();
   if (token) {
-    return await fetchFromSpotify(token);
+    const [globalTracks, mexicoTracks, personalTracks] = await Promise.all([
+      spotifyFetch(token, URL_GLOBAL_TOP).then((res) =>
+        res.items.map((i: any) => i.track),
+      ),
+      spotifyFetch(token, URL_MEXICO_TOP).then((res) =>
+        res.items.map((i: any) => i.track),
+      ),
+      spotifyFetch(token, URL_PERSONAL_TOP).then((res) => res.items),
+    ]);
+    console.log(globalTracks, mexicoTracks);
+    return { globalTracks, mexicoTracks, personalTracks };
   }
 
   const resGlobal = await fetch('global.json');

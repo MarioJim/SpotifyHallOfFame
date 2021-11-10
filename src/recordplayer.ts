@@ -77,7 +77,7 @@ export default class RecordPlayer {
 
     if (!track || this.playingTrackId === track.id) {
       this.playingTrackId = null;
-      this.particles.playPause('pause');
+      this.particles.pauseAnimation();
       this.root.remove(this.album);
       return;
     }
@@ -88,7 +88,7 @@ export default class RecordPlayer {
     const coverMaterial = await this.coversManager.fetchAlbums([albumUrl]);
     this.album.material = coverMaterial[0];
     if (firstTimePlaying) {
-      this.particles.playPause('play');
+      this.particles.playAnimation();
       this.root.add(this.album);
     }
   }
