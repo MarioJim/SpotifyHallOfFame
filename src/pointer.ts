@@ -13,11 +13,9 @@ export default class MousePointerControls {
   constructor(camera: THREE.Camera) {
     this.camera = camera;
     this.raycaster = new THREE.Raycaster();
-    this.mouse = new THREE.Vector2();
+    this.mouse = new THREE.Vector2(0, 0);
     this.objectsMap = {};
     this.handlersMap = {};
-
-    document.addEventListener('pointerdown', (e) => this.onClick(e));
   }
 
   addObjectAndHandler(object: THREE.Object3D, handler: () => void) {
@@ -29,10 +27,6 @@ export default class MousePointerControls {
   onClick(event: PointerEvent) {
     event.preventDefault();
 
-    this.mouse.set(
-      (event.clientX / window.innerWidth) * 2 - 1,
-      -(event.clientY / window.innerHeight) * 2 + 1,
-    );
     this.raycaster.setFromCamera(this.mouse, this.camera);
 
     const firstIntersection = this.raycaster.intersectObjects(

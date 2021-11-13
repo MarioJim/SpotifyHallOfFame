@@ -1,8 +1,8 @@
-import { OrbitControls } from '@three/controls/OrbitControls';
 import AlbumCoverManager from './albumcovers';
 import AudioPlayer from './audio';
 import { animate, createScene } from './environment';
 import Hall from './hall';
+import MovementControls from './movement';
 import MousePointerControls from './pointer';
 import RecordPlayer from './recordplayer';
 import { loadSpotifyData, redirectToSpotifyLogin } from './spotify';
@@ -16,12 +16,11 @@ import WallpaperManager from './wallpaper';
 
   const audioPlayer = new AudioPlayer();
   const coversManager = new AlbumCoverManager();
-  // TODO: Replace for walking controls
-  const orbitControls = new OrbitControls(camera, canvas);
   const pointerControls = new MousePointerControls(camera);
   const textGenerator = new TextGenerator();
   const wallpaperMgr = new WallpaperManager();
 
+  const movementControls = new MovementControls(camera, scene, pointerControls);
   const recordPlayer = new RecordPlayer(
     camera,
     scene,
@@ -78,5 +77,5 @@ import WallpaperManager from './wallpaper';
   );
 
   // Render the scene and animate it
-  animate(environment, [orbitControls, recordPlayer]);
+  animate(environment, [movementControls, recordPlayer]);
 })();

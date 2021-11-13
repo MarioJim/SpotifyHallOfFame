@@ -29,6 +29,7 @@ export default class RecordPlayer {
     // Initial setup
     this.camera = camera;
     this.root = new THREE.Group();
+    this.root.scale.setScalar(0.3);
     scene.add(this.root);
     this.coversManager = coversManager;
     audioPlayer.setOnSongEnd(() => this.changeTrack());
@@ -50,7 +51,7 @@ export default class RecordPlayer {
     this.particlesGroup = new THREE.Group();
     this.particles = new MusicNoteParticleSystem(this.particlesGroup, 9);
     this.particlesGroup.translateY(0.7);
-    this.particlesGroup.scale.set(0.6, 0.6, 0.6);
+    this.particlesGroup.scale.setScalar(0.6);
     this.root.add(this.particlesGroup);
   }
 
@@ -97,8 +98,8 @@ export default class RecordPlayer {
     this.root.position.copy(this.camera.position);
     this.root.rotation.copy(this.camera.rotation);
     this.root.updateMatrix();
-    this.root.translateY(-1.2);
-    this.root.translateZ(-4);
+    this.root.translateY(-0.5);
+    this.root.translateZ(-1.5);
 
     if (this.album?.parent !== null) {
       this.album.rotateZ(-0.0005 * deltat);

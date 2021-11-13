@@ -65,12 +65,12 @@ export const createScene = (canvas: HTMLCanvasElement): Environment => {
 
   // Add a camera so we can view the scene
   const camera = new THREE.PerspectiveCamera(
-    40,
+    45,
     canvas.width / canvas.height,
     1,
     4000,
   );
-  camera.position.setY(4);
+  camera.position.setY(2);
   camera.position.setZ(10);
 
   return { renderer, scene, camera };

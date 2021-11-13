@@ -4,14 +4,14 @@ import { SpotifyTrack } from './spotify';
 import TextGenerator from './text';
 import WallpaperManager from './wallpaper';
 
-const HALL_WIDTH = 5;
-const HALL_LENGTH = 16;
-const HALL_HEIGHT = 4;
+const HALL_WIDTH = 6;
+const HALL_LENGTH = 20;
+const HALL_HEIGHT = 5;
 const CENTER_APOTHEM = HALL_WIDTH / (2 * Math.sqrt(3));
 const HALL_WALL_LENGTH = HALL_LENGTH - CENTER_APOTHEM;
-const ALBUM_COVER_SIZE = 1.8;
-const LOGIN_BUTTON_WIDTH = 2;
-const LOGIN_BUTTON_TEXT_SIZE = 0.15;
+const ALBUM_COVER_SIZE = 2.2;
+const LOGIN_BUTTON_WIDTH = 3;
+const LOGIN_BUTTON_TEXT_SIZE = 0.2;
 
 export default class Hall {
   root: THREE.Group;
@@ -87,7 +87,7 @@ export default class Hall {
         trackGroup.position.setX(-HALL_WIDTH / 2 + 0.01);
         trackGroup.rotateY(Math.PI / 2);
       }
-      trackGroup.position.setY(0.3 + HALL_HEIGHT / 2);
+      trackGroup.position.setY(HALL_HEIGHT / 2);
       trackGroup.position.setZ(
         HALL_WALL_LENGTH * (0.97 - Math.floor(idx / 2) / 5.5),
       );

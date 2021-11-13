@@ -96,7 +96,7 @@ class MusicNoteParticle {
     this.model = model.children[0];
     this.#reset();
     this.scale = 0;
-    this.model.scale.set(this.scale, this.scale, this.scale);
+    this.model.scale.setScalar(this.scale);
 
     this.currMusicState = 'pause';
     this.nextMusicState = 'pause';
@@ -119,7 +119,7 @@ class MusicNoteParticle {
     }
     if (this.currMusicState === 'play') {
       this.#updateScale(deltat);
-      this.model.scale.set(this.scale, this.scale, this.scale);
+      this.model.scale.setScalar(this.scale);
       this.#updatePosition(deltat);
     }
   }
