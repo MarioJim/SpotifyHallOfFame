@@ -38,6 +38,8 @@ import WallpaperManager from './wallpaper';
       ),
   );
 
+  movementControls.addWalls(halls.map((hall) => hall.getWalls()).flat());
+
   // Load fonts
   await textGenerator.load();
 
@@ -63,8 +65,14 @@ import WallpaperManager from './wallpaper';
         const albums = await halls[idx].setTracks(tracks);
         albums.forEach((album, idx) =>
           pointerControls.addObjectAndHandler(album, () => {
-            recordPlayer.changeTrack(tracks[idx]);
-            audioPlayer.playPauseTrack(tracks[idx]);
+            if (tracks[idx].preview_url) {
+              recordPlayer.changeTrack(tracks[idx]);
+              audioPlayer.playPauseTrack(tracks[idx]);
+            } else {
+              console.error(
+                `Preview url not available for ${tracks[idx].name}`,
+              );
+            }
           }),
         );
       } else {

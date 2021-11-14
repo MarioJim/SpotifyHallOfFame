@@ -4,7 +4,7 @@ import { SpotifyTrack } from './spotify';
 import TextGenerator from './text';
 import WallpaperManager from './wallpaper';
 
-const HALL_WIDTH = 6;
+const HALL_WIDTH = 7;
 const HALL_LENGTH = 20;
 const HALL_HEIGHT = 5;
 const CENTER_APOTHEM = HALL_WIDTH / (2 * Math.sqrt(3));
@@ -104,6 +104,10 @@ export default class Hall {
 
   addTo(parent: THREE.Object3D) {
     parent.add(this.root);
+  }
+
+  getWalls(): THREE.Mesh[] {
+    return [this.rightWall, this.endWall, this.leftWall];
   }
 
   async setWallpaper(wallpaperIdx: 0 | 1 | 2) {

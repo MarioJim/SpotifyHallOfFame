@@ -14,6 +14,9 @@ export default class MovementControls {
   pointer: THREE.Mesh;
   movement: MovementState;
   direction: THREE.Vector3;
+  collisionRaycaster: THREE.Raycaster;
+  walls: THREE.Mesh[];
+  rotationAxis: THREE.Vector3;
 
   constructor(
     camera: THREE.Camera,
@@ -104,19 +107,65 @@ export default class MovementControls {
     );
 
     this.direction = new THREE.Vector3();
+
+    this.collisionRaycaster = new THREE.Raycaster();
+    this.walls = [];
+    this.rotationAxis = new THREE.Vector3(0, 1, 0);
+  }
+
+  addWalls(walls: THREE.Mesh[]) {
+    this.walls.push(...walls);
   }
 
   update(deltat: number) {
+    const camera =
+      this.pointerLockControls.getObject() as THREE.PerspectiveCamera;
+
     this.direction.z = Number(this.movement.up) - Number(this.movement.down);
     this.direction.x = Number(this.movement.right) - Number(this.movement.left);
     this.direction.normalize();
+
+    this.collisionRaycaster.ray.origin.copy(camera.position);
+    camera.getWorldDirection(this.collisionRaycaster.ray.direction);
+    this.collisionRaycaster.ray.direction.setY(0);
+
+    const frontWall = this.collisionRaycaster.intersectObjects(this.walls)[0];
+    if (frontWall && frontWall.distance < 2 && this.direction.z > 0) {
+      this.direction.setZ(0);
+    }
+
+    this.collisionRaycaster.ray.direction.applyAxisAngle(
+      this.rotationAxis,
+      Math.PI / 2,
+    );
+    const leftWall = this.collisionRaycaster.intersectObjects(this.walls)[0];
+    if (leftWall && leftWall.distance < 2 && this.direction.x < 0) {
+      this.direction.setX(0);
+    }
+
+    this.collisionRaycaster.ray.direction.applyAxisAngle(
+      this.rotationAxis,
+      Math.PI / 2,
+    );
+    const backWall = this.collisionRaycaster.intersectObjects(this.walls)[0];
+    if (backWall && backWall.distance < 2 && this.direction.z < 0) {
+      this.direction.setZ(0);
+    }
+
+    this.collisionRaycaster.ray.direction.applyAxisAngle(
+      this.rotationAxis,
+      Math.PI / 2,
+    );
+    const rightWall = this.collisionRaycaster.intersectObjects(this.walls)[0];
+    if (rightWall && rightWall.distance < 2 && this.direction.x > 0) {
+      this.direction.setX(0);
+    }
 
     const rightMov = (this.direction.x * deltat) / 100;
     const forwardMov = (this.direction.z * deltat) / 100;
     this.pointerLockControls.moveRight(rightMov);
     this.pointerLockControls.moveForward(forwardMov);
 
-    const camera = this.pointerLockControls.getObject();
     this.pointer.position.copy(camera.position);
     this.pointer.rotation.copy(camera.rotation);
     this.pointer.translateZ(-1.5);

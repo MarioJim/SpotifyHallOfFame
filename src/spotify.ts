@@ -18,7 +18,7 @@ interface SpotifyAlbum {
 export interface SpotifyTrack {
   name: string;
   id: string;
-  preview_url: string;
+  preview_url?: string;
   duration_ms: number;
   popularity: number;
   artists: SpotifyArtist[];
@@ -55,7 +55,6 @@ export const loadSpotifyData = async (): Promise<SpotifyData> => {
       ),
       spotifyFetch(token, URL_PERSONAL_TOP).then((res) => res.items),
     ]);
-    console.log(globalTracks, mexicoTracks);
     return { globalTracks, mexicoTracks, personalTracks };
   }
 
