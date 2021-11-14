@@ -22,9 +22,8 @@ jobs:
         env:
           CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
 
-      - name: Deploy with gh-pages
-        run: |
-          git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
-          yarn deploy -- --no-history --user "github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Deploy to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
