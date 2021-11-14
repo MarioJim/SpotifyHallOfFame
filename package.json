@@ -4,8 +4,9 @@
   "main": "src/main.ts",
   "repository": "https://github.com:MarioJim/SpotifyHallOfFame",
   "author": "MarioJim <mario.emilio.j@gmail.com>",
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
   "scripts": {
+    "fetch-tops": "cd update-tops && yarn install && yarn fetch",
     "start": "webpack-dev-server --color --progress",
     "build": "webpack --color --progress --mode=production",
     "deploy": "gh-pages --dist public"

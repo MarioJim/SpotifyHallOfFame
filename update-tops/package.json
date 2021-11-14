@@ -1,0 +1,16 @@
+{
+  "name": "update-tops",
+  "version": "1.0.0",
+  "license": "GPL-3.0-or-later",
+  "scripts": {
+    "fetch": "ts-node ./main.ts"
+  },
+  "dependencies": {
+    "@types/node": "^16.11.7",
+    "@types/node-fetch": "^2",
+    "dotenv": "^10.0.0",
+    "node-fetch": "^2",
+    "ts-node": "^10.4.0",
+    "typescript": "^4.4.4"
+  }
+}

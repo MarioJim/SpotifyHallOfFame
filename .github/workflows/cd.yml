@@ -14,15 +14,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Install dependencies
-        run: yarn install
-
-      - name: Build website
-        run: yarn build
+      - name: Build website and fetch new top songs
+        run: |
+          yarn install
+          yarn build
+          yarn fetch-tops
+        env:
+          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
 
       - name: Deploy with gh-pages
         run: |
           git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
-          yarn deploy -- --no-history --user "github-actions-bot <support+actions@github.com>"
+          yarn deploy -- --no-history --user "github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
