@@ -16,11 +16,11 @@ const resizeRendererToDisplaySize = (
 
 let currentTime = Date.now();
 
-type AnimateObj = { update: (deltat: number) => void };
+type AnimatedObj = { update: (deltat: number) => void };
 
 export const animate = (
   environment: Environment,
-  objects: AnimateObj[],
+  objects: AnimatedObj[],
 ): void => {
   const { renderer, scene, camera } = environment;
 
@@ -60,7 +60,7 @@ export const createScene = (canvas: HTMLCanvasElement): Environment => {
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0.3, 0.3, 0.3);
 
-  const ambientLight = new THREE.AmbientLight(0xdddddd, 1);
+  const ambientLight = new THREE.AmbientLight(0xdddddd, 0.6);
   scene.add(ambientLight);
 
   // Add a camera so we can view the scene

@@ -10,7 +10,7 @@ const RECORD_PLAYER_X_ROTATION = -0.4 * Math.PI;
 
 export default class RecordPlayer {
   root: THREE.Group;
-  light: THREE.DirectionalLight;
+  light: THREE.SpotLight;
   model: THREE.Object3D;
   album: THREE.Mesh;
   playingTrackId: string | null;
@@ -22,7 +22,7 @@ export default class RecordPlayer {
 
   constructor(
     camera: THREE.Camera,
-    scene: THREE.Scene,
+    parent: THREE.Object3D,
     coversManager: AlbumCoverManager,
     audioPlayer: AudioPlayer,
   ) {
@@ -30,13 +30,13 @@ export default class RecordPlayer {
     this.camera = camera;
     this.root = new THREE.Group();
     this.root.scale.setScalar(0.3);
-    scene.add(this.root);
+    parent.add(this.root);
     this.coversManager = coversManager;
     audioPlayer.setOnSongEnd(() => this.changeTrack());
 
     // Add light above the record player
-    this.light = new THREE.DirectionalLight(0xffffff, 0.2);
-    this.light.translateY(1);
+    this.light = new THREE.SpotLight(0xffffff, 1, 10, 0.8, 0.2, 2);
+    this.light.translateY(4);
     this.root.add(this.light);
 
     /// Create the album model
@@ -65,8 +65,8 @@ export default class RecordPlayer {
     const bodyMesh = this.model.children[1].children[0] as THREE.Mesh;
     bodyMesh.material = new THREE.MeshNormalMaterial();
 
-    this.light.target = this.model;
     this.root.add(this.model);
+    this.light.target = this.model;
 
     await this.particles.load();
   }

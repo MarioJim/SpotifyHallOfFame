@@ -4,7 +4,7 @@ import { SpotifyTrack } from './spotify';
 import TextGenerator from './text';
 import WallpaperManager from './wallpaper';
 
-const HALL_WIDTH = 7;
+const HALL_WIDTH = 7.2;
 const HALL_LENGTH = 20;
 const HALL_HEIGHT = 5;
 const CENTER_APOTHEM = HALL_WIDTH / (2 * Math.sqrt(3));
@@ -16,11 +16,16 @@ const LOGIN_BUTTON_TEXT_SIZE = 0.2;
 export default class Hall {
   root: THREE.Group;
   leftWall: THREE.Mesh;
+  normalFromLeftWall: THREE.Vector3;
   rightWall: THREE.Mesh;
-  endWall: THREE.Mesh;
-  endTitles: THREE.Group;
-  endGroup: THREE.Group;
+  normalFromRightWall: THREE.Vector3;
   trackGroups: THREE.Group[];
+
+  endGroup: THREE.Group;
+  endWall: THREE.Mesh;
+  endWallSpotlight: THREE.SpotLight;
+  normalFromEndWall: THREE.Vector3;
+  endTitles: THREE.Group;
 
   title: string;
   coversManager: AlbumCoverManager;
@@ -30,12 +35,14 @@ export default class Hall {
   constructor(
     rotation: number,
     title: string,
+    parent: THREE.Object3D,
     coversManager: AlbumCoverManager,
     textGenerator: TextGenerator,
     wallpaperMgr: WallpaperManager,
   ) {
     this.root = new THREE.Group();
     this.root.rotateY(rotation);
+    parent.add(this.root);
 
     const tempMaterial = new THREE.MeshNormalMaterial();
 
@@ -57,6 +64,9 @@ export default class Hall {
     this.leftWall.rotateY(-Math.PI / 2);
     this.root.add(this.leftWall);
 
+    this.normalFromLeftWall = new THREE.Vector3();
+    this.leftWall.getWorldDirection(this.normalFromLeftWall);
+
     this.rightWall = new THREE.Mesh(sideWallGeometry, tempMaterial);
     this.rightWall.position.setX(-HALL_WIDTH / 2);
     this.rightWall.position.setY(HALL_HEIGHT / 2);
@@ -64,19 +74,8 @@ export default class Hall {
     this.rightWall.rotateY(Math.PI / 2);
     this.root.add(this.rightWall);
 
-    this.endGroup = new THREE.Group();
-    this.endGroup.position.setY(HALL_HEIGHT / 2);
-    this.endGroup.position.setZ(HALL_LENGTH);
-    this.endGroup.rotateY(Math.PI);
-    this.root.add(this.endGroup);
-
-    this.endTitles = new THREE.Group();
-    this.endTitles.translateZ(0.01);
-    this.endGroup.add(this.endTitles);
-
-    const endWallGeometry = new THREE.PlaneGeometry(HALL_WIDTH, HALL_HEIGHT);
-    this.endWall = new THREE.Mesh(endWallGeometry, tempMaterial);
-    this.endGroup.add(this.endWall);
+    this.normalFromRightWall = new THREE.Vector3();
+    this.rightWall.getWorldDirection(this.normalFromRightWall);
 
     this.trackGroups = Array.from(Array(10).keys()).map((idx) => {
       const trackGroup = new THREE.Group();
@@ -96,14 +95,44 @@ export default class Hall {
       return trackGroup;
     });
 
+    this.endGroup = new THREE.Group();
+    this.endGroup.position.setY(HALL_HEIGHT / 2);
+    this.endGroup.position.setZ(HALL_LENGTH);
+    this.endGroup.rotateY(Math.PI);
+    this.root.add(this.endGroup);
+
+    this.endTitles = new THREE.Group();
+    this.endTitles.translateZ(0.01);
+    this.endGroup.add(this.endTitles);
+
+    const endWallGeometry = new THREE.PlaneGeometry(HALL_WIDTH, HALL_HEIGHT);
+    this.endWall = new THREE.Mesh(endWallGeometry, tempMaterial);
+    this.endGroup.add(this.endWall);
+
+    this.normalFromEndWall = new THREE.Vector3();
+    this.endWall.getWorldDirection(this.normalFromEndWall);
+
+    this.endWallSpotlight = new THREE.SpotLight(0xffffff, 3);
+    this.endWallSpotlight.angle = 0.8;
+    this.endWallSpotlight.penumbra = 0.2;
+    this.endWallSpotlight.decay = 2;
+    this.endWallSpotlight.distance = 20;
+
+    const endWallPosition = new THREE.Vector3();
+    this.endWall.getWorldPosition(endWallPosition);
+    this.endWallSpotlight.position.copy(endWallPosition);
+    this.endWallSpotlight.translateY(2);
+    this.endWallSpotlight.translateOnAxis(this.normalFromEndWall, 0.5);
+    this.endWallSpotlight.target.position.copy(endWallPosition);
+    this.endWallSpotlight.target.position.copy(endWallPosition);
+
+    parent.add(this.endWallSpotlight.target);
+    parent.add(this.endWallSpotlight);
+
     this.title = title;
     this.coversManager = coversManager;
     this.textGenerator = textGenerator;
     this.wallpaperMgr = wallpaperMgr;
-  }
-
-  addTo(parent: THREE.Object3D) {
-    parent.add(this.root);
   }
 
   getWalls(): THREE.Mesh[] {
@@ -143,19 +172,24 @@ export default class Hall {
   }
 
   setLoginButton(): THREE.Object3D {
-    // Close path
     this.endGroup.position.z = CENTER_APOTHEM;
-    // Move titles up
-    this.endTitles.translateY(0.4);
-    // Show button
+
+    this.endWallSpotlight.translateOnAxis(
+      this.normalFromEndWall,
+      HALL_LENGTH - CENTER_APOTHEM,
+    );
+    this.endWallSpotlight.target.translateOnAxis(
+      this.normalFromEndWall,
+      HALL_LENGTH - CENTER_APOTHEM,
+    );
 
     const loginButton = new THREE.Group();
-    loginButton.translateY(-0.4);
+    loginButton.translateY(-1);
     loginButton.translateZ(0.01);
 
     const loginButtonBodyGeom = new THREE.BoxGeometry(
       LOGIN_BUTTON_WIDTH,
-      0.7,
+      0.9,
       0.01,
     );
     const loginButtonBody = new THREE.Mesh(
@@ -172,13 +206,15 @@ export default class Hall {
     loginButtonText.translateZ(0.01);
     loginButtonText.translateY(-LOGIN_BUTTON_TEXT_SIZE / 2);
     loginButton.add(loginButtonText);
-
     this.endGroup.add(loginButton);
 
     return loginButton;
   }
 
-  async setTracks(tracks: SpotifyTrack[]): Promise<THREE.Object3D[]> {
+  async setTracks(
+    tracks: SpotifyTrack[],
+    parent: THREE.Object3D,
+  ): Promise<THREE.Object3D[]> {
     const textureUrls = tracks.map((track) => track.album.images[0].url);
     const albumCoverMaterials = await this.coversManager.fetchAlbums(
       textureUrls,
@@ -189,10 +225,23 @@ export default class Hall {
       ALBUM_COVER_SIZE,
     );
 
+    const position = new THREE.Vector3();
+
     tracks.forEach((track, idx) => {
       const albumCoverMaterial = albumCoverMaterials[idx];
       const albumCover = new THREE.Mesh(albumCoverGeometry, albumCoverMaterial);
       this.trackGroups[idx].add(albumCover);
+
+      const albumSpotlight = new THREE.SpotLight(0xffffff, 3, 20, 0.4, 0.2, 2);
+      this.trackGroups[idx].getWorldPosition(position);
+      albumSpotlight.position.copy(position);
+      albumSpotlight.translateY(2);
+      const normal =
+        idx % 2 === 0 ? this.normalFromLeftWall : this.normalFromRightWall;
+      albumSpotlight.translateOnAxis(normal, 0.5);
+      albumSpotlight.target.position.copy(position);
+      parent.add(albumSpotlight.target);
+      parent.add(albumSpotlight);
 
       const idxText = this.textGenerator.newBold(`${idx + 1}`, {
         size: 0.5,

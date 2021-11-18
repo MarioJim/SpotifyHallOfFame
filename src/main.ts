@@ -27,11 +27,12 @@ import WallpaperManager from './wallpaper';
     coversManager,
     audioPlayer,
   );
-  const halls: Hall[] = ['México', 'Global', 'Personal'].map(
+  const halls = ['México', 'Global', 'Personal'].map(
     (title, idx) =>
       new Hall(
         (2 * idx * Math.PI) / 3,
         title,
+        scene,
         coversManager,
         textGenerator,
         wallpaperMgr,
@@ -46,12 +47,8 @@ import WallpaperManager from './wallpaper';
   // Load models and halls
   await Promise.all([
     recordPlayer.load(),
-    ...halls.map((hall) =>
-      (async () => {
-        await Promise.all([hall.setWallpaper(1), hall.drawEndWall()]);
-        hall.addTo(scene);
-      })(),
-    ),
+    ...halls.map((hall) => hall.setWallpaper(1)),
+    ...halls.map((hall) => hall.drawEndWall()),
   ]);
 
   // Load Spotify data
@@ -62,7 +59,7 @@ import WallpaperManager from './wallpaper';
   await Promise.all(
     [mexicoTracks, globalTracks, personalTracks].map(async (tracks, idx) => {
       if (tracks) {
-        const albums = await halls[idx].setTracks(tracks);
+        const albums = await halls[idx].setTracks(tracks, scene);
         albums.forEach((album, idx) =>
           pointerControls.addObjectAndHandler(album, () => {
             if (tracks[idx].preview_url) {
