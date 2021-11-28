@@ -47,6 +47,7 @@ import WallpaperManager from './wallpaper';
   // Load models and halls
   await Promise.all([
     recordPlayer.load(),
+    ...halls.map((hall) => hall.loadFloor()),
     ...halls.map((hall) => hall.setWallpaper(1)),
     ...halls.map((hall) => hall.drawEndWall()),
   ]);

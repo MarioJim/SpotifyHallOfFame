@@ -58,7 +58,7 @@ export const createScene = (canvas: HTMLCanvasElement): Environment => {
 
   // Create a new Three.js scene
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0.3, 0.3, 0.3);
+  scene.background = new THREE.Color(30 / 256, 26 / 256, 22 / 256);
 
   const ambientLight = new THREE.AmbientLight(0xdddddd, 0.6);
   scene.add(ambientLight);

@@ -15,6 +15,11 @@ const LOGIN_BUTTON_TEXT_SIZE = 0.2;
 
 export default class Hall {
   root: THREE.Group;
+
+  floor: THREE.Mesh;
+  centerFloor: THREE.Mesh;
+  ceiling: THREE.Mesh;
+
   leftWall: THREE.Mesh;
   normalFromLeftWall: THREE.Vector3;
   rightWall: THREE.Mesh;
@@ -46,11 +51,25 @@ export default class Hall {
 
     const tempMaterial = new THREE.MeshNormalMaterial();
 
-    const floorGeometry = new THREE.PlaneGeometry(HALL_WIDTH, HALL_LENGTH);
-    const floor = new THREE.Mesh(floorGeometry, tempMaterial);
-    floor.position.setZ(HALL_LENGTH / 2);
-    floor.rotateX(-Math.PI / 2);
-    this.root.add(floor);
+    const floorGeometry = new THREE.PlaneGeometry(HALL_WIDTH, HALL_WALL_LENGTH);
+    this.floor = new THREE.Mesh(floorGeometry, tempMaterial);
+    this.floor.position.setZ((HALL_LENGTH + CENTER_APOTHEM) / 2);
+    this.floor.rotateX(-Math.PI / 2);
+    this.root.add(this.floor);
+
+    if (rotation === 0) {
+      const centerFloorGeometry = new THREE.PlaneGeometry(
+        HALL_WIDTH,
+        (Math.sqrt(3) * HALL_WIDTH) / 2 + 0.02,
+      );
+      this.centerFloor = new THREE.Mesh(centerFloorGeometry, tempMaterial);
+      this.centerFloor.rotateX(-Math.PI / 2);
+      this.centerFloor.rotateZ(Math.PI / 3);
+      this.centerFloor.translateY(-1.05);
+      this.root.add(this.centerFloor);
+    } else {
+      this.centerFloor = null;
+    }
 
     const sideWallGeometry = new THREE.PlaneGeometry(
       HALL_WALL_LENGTH,
@@ -137,6 +156,14 @@ export default class Hall {
 
   getWalls(): THREE.Mesh[] {
     return [this.rightWall, this.endWall, this.leftWall];
+  }
+
+  async loadFloor() {
+    this.floor.material = await this.wallpaperMgr.getHallFloorMaterial();
+    if (this.centerFloor) {
+      this.centerFloor.material =
+        await this.wallpaperMgr.getCenterFloorMaterial();
+    }
   }
 
   async setWallpaper(wallpaperIdx: 0 | 1 | 2) {

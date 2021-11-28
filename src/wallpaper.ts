@@ -14,11 +14,15 @@ interface Wallpaper {
 
 export default class WallpaperManager {
   loader: THREE.TextureLoader;
+  hallFloorMaterial: THREE.MeshPhongMaterial;
+  centerFloorMaterial: THREE.MeshPhongMaterial;
   wallpapers: Wallpaper[];
   wallpaperData: WallpaperData[];
 
   constructor() {
     this.loader = new THREE.TextureLoader();
+    this.hallFloorMaterial = null;
+    this.centerFloorMaterial = null;
     this.wallpapers = [null, null, null];
     this.wallpaperData = [
       {
@@ -40,6 +44,33 @@ export default class WallpaperManager {
         scale: 1,
       },
     ];
+  }
+
+  async getHallFloorMaterial(): Promise<THREE.MeshPhongMaterial> {
+    if (this.hallFloorMaterial === null) {
+      const texture = await this.loader.loadAsync('./images/floor.jpg');
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(1, 5);
+
+      this.hallFloorMaterial = new THREE.MeshPhongMaterial({
+        map: texture,
+        side: THREE.DoubleSide,
+      });
+    }
+    return this.hallFloorMaterial;
+  }
+
+  async getCenterFloorMaterial(): Promise<THREE.MeshPhongMaterial> {
+    if (this.centerFloorMaterial === null) {
+      const texture = await this.loader.loadAsync('./images/center_floor.png');
+      this.centerFloorMaterial = new THREE.MeshPhongMaterial({
+        map: texture,
+        side: THREE.DoubleSide,
+        transparent: true,
+      });
+    }
+    return this.centerFloorMaterial;
   }
 
   async getWallpaper(
