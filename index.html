@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <title>Spotify Hall of Fame</title>
+    <script defer src="main.bundle.js"></script>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+      }
+      #instructions {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        color: white;
+        font-family: sans-serif;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 4px;
+      }
+      #instructions div {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 6px;
+      }
+      #instructions div p {
+        margin: 0;
+      }
+      #webglcanvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="instructions">
+      <span style="font-size: 40px">Click to enter</span><br />
+      <div>
+        <p>WASD or Arrow keys = Move</p>
+        <p>Mouse = Look around</p>
+        <p>Esc = Free the mouse</p>
+      </div>
+    </div>
+    <canvas id="webglcanvas"></canvas>
+  </body>
+</html>
